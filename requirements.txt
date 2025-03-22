@@ -1,0 +1,2 @@
+`numpy`, `torch`, `rdkit`, `requests`, `scikit-learn`, `scipy`, `py3Dmol`, `trimesh`, `opencv-python`, `pytesseract`, `pywt`.
+
