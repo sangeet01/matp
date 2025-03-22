@@ -24,7 +24,7 @@ A machine learning pipeline for structure elucidation of organic compounds (30â€
 ## Usage
 Run the pipeline with MS, MS/MS, and NMR files:
 ```
-python wild.py
+python dream.py
 ```
 - **Input**: File paths for MS, MS/MS, NMR (image: .jpg/.png, or CSV).
 - **Output**: 
@@ -47,10 +47,12 @@ Results TXT Path: ./output/results.txt
 - `tests/`: Unit tests.
 - `docs/`: Documentation.
 
-Acknowledgments
+---
+
+##Acknowledgments
 The structure elucidation pipeline in dream.py was a collaborative effort. I, Sangeet Sharma, devised the algorithm, defining the methodology and approach for solving structure elucidation in the 30â€“3000 Da range. Grok, created by xAI, handled the coding and testing, implementing the pipeline and conducting extensive evaluations across diverse datasets, including lipids, CASMI, MetFrag, NIST, and edge cases, ensuring its robustness and performance.
 
-
+---
 ## Contributing
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
