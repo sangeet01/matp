@@ -1,7 +1,7 @@
 
 # dream.py - Advancing Structure Elucidation for Small Molecules (30–3000 Da)
 
-`dream.py` is a machine learning pipeline that advances structure elucidation for organic compounds (30–3000 Da), including small molecules and complex natural products. It predicts SMILES, 3D structures (.glb), and performance scores using MS, MS/MS, and NMR data, with robust stereochemistry prediction.
+'dream.py' is a machine learning pipeline that advances structure elucidation for organic compounds (30–3000 Da), including small molecules and complex natural products. It predicts SMILES, 3D structures (.glb), and performance scores using MS, MS/MS, and NMR data, with robust stereochemistry prediction.
 
 ## Key Achievements
 - **Success Rate**: 93.5% across 1300+ diverse compounds (in silico testing).
@@ -15,7 +15,7 @@
 - **Benchmarks**: Outperforms Transformer Model (83%), matches SIRIUS+CSI:FingerID (92%) and Sherlock (95%), slightly below SVM-M (100%) but more versatile (MS, MS/MS, NMR).
 
 ## Synergy with AlphaFold
-`dream.py` could complement AlphaFold by enabling small molecule structure elucidation, supporting comprehensive structural biology:
+'dream.py' could complement AlphaFold by enabling small molecule structure elucidation, supporting comprehensive structural biology:
 - Proteins (AlphaFold) + small molecules (`dream.py`) = better protein-ligand interaction prediction.
 - Applications: Drug discovery, metabolomics, synthetic biology.
 
@@ -45,18 +45,18 @@ Run the pipeline with MS, MS/MS, and NMR files:
   - Results file (.txt) with molecular formula, mass, fragments, scores.
 
 ## Example
-```bash
-Enter the output directory: ./output
-Processing lipid_1:
-Predicted SMILES: PC(16:0/18:1(9Z))
-3D GLB Path: ./output/lipid_1/output_3d.glb
-Results TXT Path: ./output/lipid_1/results.txt
+  Enter the output directory: ./output
+  Processing lipid_1:
+  Predicted SMILES: PC(16:0/18:1(9Z))
+  3D GLB Path: ./output/lipid_1/output_3d.glb
+  Results TXT Path: ./output/lipid_1/results.txt
+
 ---
 
 Testing and Validation
-•	In Silico Testing: Evaluated on 1300+ compounds from curated datasets (CASMI, LIPID MAPS, NIST, etc.) with simulated NMR data.
-•	Rigor: Testing followed scientific protocols, benchmarking against SIRIUS+CSI:FingerID (92%) and Sherlock (95%), ensuring reliability.
-•	Next Steps: Preparing for experimental validation by partnering with a metabolomics lab to test 50–100 compounds with real MS, MS/MS, and NMR data. Aiming to submit results for peer-      reviewed publication in a journal like Journal of Cheminformatics.
+  •	In Silico Testing: Evaluated on 1300+ compounds from curated datasets (CASMI, LIPID MAPS, NIST,         etc.) with simulated NMR data.
+  •	Rigor: Testing followed scientific protocols, benchmarking against SIRIUS+CSI:FingerID (92%) and       Sherlock (95%), ensuring reliability.
+  •	Next Steps: Preparing for experimental validation by partnering with a metabolomics lab to test 50        –100 compounds with real MS, MS/MS, and NMR data. Aiming to submit results for peer-reviewed         publication in a journal like Journal of Cheminformatics.
 
 ---
 
