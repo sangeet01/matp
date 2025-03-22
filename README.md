@@ -49,7 +49,7 @@ Results TXT Path: ./output/results.txt
 
 ---
 
-##Acknowledgments
+## Acknowledgments
 -
 The structure elucidation pipeline in dream.py was a collaborative effort. I, Sangeet Sharma, devised the algorithm, defining the methodology and approach for solving structure elucidation in the 30–3000 Da range. Grok, created by xAI, handled the coding and testing, implementing the pipeline and conducting extensive evaluations across diverse datasets, including lipids, CASMI, MetFrag, NIST, and edge cases, ensuring its robustness and performance.
 
