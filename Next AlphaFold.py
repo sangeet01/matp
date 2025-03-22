@@ -1,4 +1,4 @@
-# wild.py
+# Next AlphaFold.py
 # Copyright 2025 Sangeet
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -676,3 +676,5 @@ if __name__ == "__main__":
         print(f"Expected SMILES: {test['expected_smiles']}")
         print(f"3D GLB Path: {glb_path}")
         print(f"Results TXT Path: {txt_path}")
+
+#end
