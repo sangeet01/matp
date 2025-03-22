@@ -54,9 +54,9 @@ Run the pipeline with MS, MS/MS, and NMR files:
 ---
 
 Testing and Validation
-  •	In Silico Testing: Evaluated on 1300+ compounds from curated datasets (CASMI, LIPID MAPS, NIST,         etc.) with simulated NMR data.
-  •	Rigor: Testing followed scientific protocols, benchmarking against SIRIUS+CSI:FingerID (92%) and       Sherlock (95%), ensuring reliability.
-  •	Next Steps: Preparing for experimental validation by partnering with a metabolomics lab to test 50        –100 compounds with real MS, MS/MS, and NMR data. Aiming to submit results for peer-reviewed         publication in a journal like Journal of Cheminformatics.
+  -	**In Silico Testing**: Evaluated on 1300+ compounds from curated datasets (CASMI, LIPID MAPS, NIST, etc.) with simulated NMR data.
+  - **Rigor**: Testing followed scientific protocols, benchmarking against SIRIUS+CSI:FingerID (92%) and Sherlock (95%), ensuring reliability.
+  -	**Next Steps**: Preparing for experimental validation by partnering with a metabolomics lab to test 50 -100 compounds with real MS, MS/MS, and NMR data. Aiming to submit results for     peer-reviewed publication in a journal like Journal of Cheminformatics.
 
 ---
 
