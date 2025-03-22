@@ -59,13 +59,14 @@ Testing and Validation
   •	Next Steps: Preparing for experimental validation by partnering with a metabolomics lab to test 50        –100 compounds with real MS, MS/MS, and NMR data. Aiming to submit results for peer-reviewed         publication in a journal like Journal of Cheminformatics.
 
 ---
+
 ##Limitations
-    In Silico Testing: Results are based on curated datasets and simulated NMR data, awaiting experimental validation with real spectral data.
-    Complex Stereochemistry: Struggles with highly glycosylated natural products due to overlapping NMR signals, causing some stereochemistry errors.
-    Lipid sn-Positions: Cannot reliably identify sn-positions in lipids (e.g., sn-1 vs. sn-2 in glycerophospholipids).
-    Noisy/Missing Data: Performance drops with noisy or incomplete spectra (e.g., 87% success rate with 30% missing NMR peaks), though mitigated by a denoising CNN.
-    Novel Compounds: Limited accuracy for compounds not in databases, as the model relies on database matching for some predictions.
-    Future Work: Experimental validation and improved handling of glycosylated compounds and sn-positions are planned to address these limitations.
+    -In Silico Testing: Results are based on curated datasets and simulated NMR data, awaiting experimental validation with real spectral data.
+    -Complex Stereochemistry: Struggles with highly glycosylated natural products due to overlapping NMR signals, causing some stereochemistry errors.
+    -Lipid sn-Positions: Cannot reliably identify sn-positions in lipids (e.g., sn-1 vs. sn-2 in glycerophospholipids).
+    -Noisy/Missing Data: Performance drops with noisy or incomplete spectra (e.g., 87% success rate with 30% missing NMR peaks), though mitigated by a denoising CNN.
+    -Novel Compounds: Limited accuracy for compounds not in databases, as the model relies on database matching for some predictions.
+    -Future Work: Experimental validation and improved handling of glycosylated compounds and sn-positions are planned to address these limitations.
 
 ---
 
