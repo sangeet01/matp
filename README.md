@@ -1,7 +1,4 @@
-Below is a concise `README.md` for the `wild.py` project on GitHub, tailored for Sangeet Sharma’s structure elucidation pipeline. It provides an overview, setup instructions, usage, inputs/outputs, and contribution guidelines, adhering to the user’s preference for brevity.
-
----
-
+-
 # /Next-AlphaFold - Structure Elucidation Pipeline
 
 A machine learning pipeline for structure elucidation of organic compounds (30–3000 Da) using MS, MS/MS, and NMR data. Predicts SMILES, 3D structures (.glb), and performance scores, with enhanced stereochemistry prediction.
