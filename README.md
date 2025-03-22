@@ -1,5 +1,5 @@
 
-# drea - Structure Elucidation Pipeline
+# dream - Structure Elucidation Pipeline
 
 A machine learning pipeline for structure elucidation of organic compounds (30–3000 Da) using MS, MS/MS, and NMR data. Predicts SMILES, 3D structures (.glb), and performance scores, with enhanced stereochemistry prediction.
 
