@@ -55,7 +55,7 @@ The structure elucidation pipeline in dream.py was a collaborative effort. I, Sa
 
 ---
 ## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions to ganga3D are welcome! Please fork the repository, make your changes, and submit a pull request. For questions or to discuss potential contributions, contact Sangeet Sharma on LinkedIn.
 
 ## License
 Apache License 2.0 - see [LICENSE](LICENSE).
