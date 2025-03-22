@@ -65,13 +65,8 @@ Testing and Validation
 
 ---
 
-##  Contributing
-   See for guidelines. Follow the .
-
----
-
 ## License
-   Apache License 2.0 - see .
+   Apache License 2.0 
 
 ---
 
@@ -83,3 +78,9 @@ Testing and Validation
 ## Acknowledgments
    I, Sangeet Sharma devised the algorithm and oversaw the project, ensuring scientific rigor. Grok, created by xAI, served as a tool to accelerate coding and perform in silico testing       across 1300+ compounds, under my guidance.
 
+
+##  Contributions
+  Contributions to ganga3D are welcome! Please fork the repository, make your changes, and submit a pull request. For questions or to discuss potential contributions, contact Sangeet          Sharma on LinkedIn.
+
+## PS
+   Sangeet’s the name, a daft undergrad splashing through chemistry and code like a toddler—my titrations are a mess, and I’ve used my mouth to pipette.
