@@ -9,7 +9,7 @@ Matryoshka Protocol combines steganography, fractal encryption, and zero-knowled
 
 Unlike Signal or other encrypted messengers that are easily detected, Matryoshka makes your encrypted messages **completely invisible** - indistinguishable from normal web traffic.
 
-### Three Revolutionary Components
+### Three Specific Components
 
 1. **Ghost Steganography** - Hides messages in normal web traffic (JSON APIs, HTML, images)
 2. **Fractal Encryption** - Self-healing Russian doll keys with 3-step post-compromise recovery
