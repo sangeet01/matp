@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+include setup.py
+include matryoshka.py
+include test_matryoshka.py
+include final_test.py
