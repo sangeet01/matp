@@ -128,7 +128,7 @@ Based on formal security proofs combining:
 - Zero-knowledge proof systems
 - Post-quantum cryptography
 
-For academic inquiries or security research, see [docs/security.md](docs/security.md).
+For security research, see [docs/security.md](docs/security.md).
 
 ##  Why Matryoshka?
 
@@ -139,3 +139,11 @@ Like Russian nesting dolls, each layer protects the next:
 - **Proof**: Mathematical innocence (ZKP)
 
 **The future of secure communication is invisible.**
+
+
+## Contact
+[Sangeet Sharma on LinkedIn](https://www.linkedin.com/in/sangeet-sangiit01).
+
+
+
+PS: Sangeet’s the name, a daft undergrad splashing through chemistry and code like a toddler—my titrations are a mess, and I’ve used my mouth to pipette.
