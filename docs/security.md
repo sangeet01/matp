@@ -64,6 +64,7 @@ Recovery probability: 1 - (1 - p)³ where p = prob of unobserved exchange.
 
 ### Traffic Analysis
 **Attack**: Analyze timing, size, frequency patterns
+
 **Defense**: 
 - Random delays (50-200ms)
 - Padding to standard sizes (1KB, 4KB, 16KB)
@@ -71,10 +72,12 @@ Recovery probability: 1 - (1 - p)³ where p = prob of unobserved exchange.
 
 ### Replay Attacks
 **Attack**: Resend captured messages
+
 **Defense**: Nonce-based freshness, monotonic counter in key derivation
 
 ### Man-in-the-Middle
 **Attack**: Intercept and modify messages
+
 **Defense**: 
 - Authenticated encryption (ChaCha20-Poly1305)
 - Public key pinning in DHT
@@ -82,10 +85,12 @@ Recovery probability: 1 - (1 - p)³ where p = prob of unobserved exchange.
 
 ### Quantum Attacks
 **Attack**: Shor's algorithm breaks ECDH
+
 **Defense**: Hybrid encryption with post-quantum KEM (Kyber)
 
 ### Compromise Attacks
 **Attack**: Steal device/keys
+
 **Defense**: 
 - Fractal recovery (3-step)
 - Forward secrecy
