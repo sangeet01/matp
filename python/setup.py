@@ -7,7 +7,7 @@ setup(
     name="matp",
     version="0.1.0",
     author="Sangeet Sharma",
-    author_email="sangeet.music01@gmail.com",
+    author_email="s..........@gmail.com",
     description="Matryoshka Protocol - The truly invisible secure messaging system",
     long_description="""Secure messaging protocol combining Ghost steganography + Fractal self-healing + Zero-knowledge proofs.
     
