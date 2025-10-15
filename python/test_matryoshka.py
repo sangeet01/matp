@@ -7,6 +7,7 @@ Test suite for Matryoshka Protocol - Working Version
 import json
 import base64
 import time
+import sys
 
 class MatryoshkaProtocol:
     """Working Matryoshka Protocol implementation."""
