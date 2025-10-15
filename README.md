@@ -220,3 +220,6 @@ This is experimental software. While the cryptographic design has been formally 
 
 ## Contact
 [Sangeet Sharma on LinkedIn](https://www.linkedin.com/in/sangeet-sangiit01).
+
+
+## PS: Sangeet’s the name, a daft undergrad splashing through chemistry and code like a toddler—my titrations are a mess, and I’ve used my mouth to pipette.
