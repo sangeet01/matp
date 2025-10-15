@@ -1,0 +1,42 @@
+[package]
+name = "mtp-core"
+version = "0.1.0"
+edition = "2025"
+authors = ["Sangeet Sharma"]
+description = "Core cryptographic library for the Matryoshka Protocol (MTP)"
+license = "Apache-2.0"
+
+[lib]
+name = "mtp_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mtp-simulation"
+path = "src/main.rs"
+
+[dependencies]
+# Classical Cryptography
+rand_core = "0.6"
+x25519-dalek = "2.0"
+aes-gcm = "0.10"
+hkdf = "0.12"
+sha2 = "0.10"
+
+# Post-Quantum Cryptography (using a standard FFI wrapper)
+oqs = { version = "0.9", features = ["kem_kyber", "sig_dilithium"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+rmp-serde = "1.1" # MessagePack for compact serialization
+
+# Asynchronous Operations (for DHT)
+tokio = { version = "1", features = ["full"] }
+
+# Steganography Dependencies
+image = "0.24"
+piexif = "0.5"
+serde_json = "1.0"
+
+# Utilities
+thiserror = "1.0"
+u256 = { version = "0.4", package = "ethnum" }

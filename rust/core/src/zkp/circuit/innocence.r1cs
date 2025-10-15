@@ -1,0 +1,34 @@
+# Innocence Circuit R1CS (Rank-1 Constraint System)
+# This is a simplified representation - in production this would be binary
+
+# Circuit: Prove traffic statistics are within normal web browsing bounds
+# Public inputs: [min_bounds, max_bounds] 
+# Private inputs: [traffic_stats, randomness]
+
+# Constraint format: (A, B, C) where A * B = C
+
+# Variables:
+# 0: constant 1
+# 1-4: min_bounds (avg_size_min, avg_interval_min, json_ratio_min, image_ratio_min)
+# 5-8: max_bounds (avg_size_max, avg_interval_max, json_ratio_max, image_ratio_max)
+# 9-12: traffic_stats (avg_size, avg_interval, json_ratio, image_ratio)
+# 13: randomness
+
+# Constraints:
+# 1. traffic_stats[0] >= min_bounds[0]: (traffic_stats[0] - min_bounds[0]) * 1 = diff[0]
+# 2. max_bounds[0] >= traffic_stats[0]: (max_bounds[0] - traffic_stats[0]) * 1 = diff[1]
+# 3. traffic_stats[1] >= min_bounds[1]: (traffic_stats[1] - min_bounds[1]) * 1 = diff[2]
+# 4. max_bounds[1] >= traffic_stats[1]: (max_bounds[1] - traffic_stats[1]) * 1 = diff[3]
+# 5. traffic_stats[2] >= min_bounds[2]: (traffic_stats[2] - min_bounds[2]) * 1 = diff[4]
+# 6. max_bounds[2] >= traffic_stats[2]: (max_bounds[2] - traffic_stats[2]) * 1 = diff[5]
+# 7. traffic_stats[3] >= min_bounds[3]: (traffic_stats[3] - min_bounds[3]) * 1 = diff[6]
+# 8. max_bounds[3] >= traffic_stats[3]: (max_bounds[3] - traffic_stats[3]) * 1 = diff[7]
+# 9. Zero-knowledge: randomness * randomness = randomness_squared
+
+# Circuit metadata:
+VARIABLES: 22
+CONSTRAINTS: 9
+PUBLIC_INPUTS: 8
+PRIVATE_INPUTS: 5
+
+# This would be compiled to binary format by circom/arkworks in production
