@@ -39,11 +39,6 @@
 # Basic installation
 pip install matp
 
-# With quantum resistance
-pip install matp[quantum]
-
-# Full features (image steganography, HTTP cover traffic)
-pip install matp[full]
 ```
 
 ## 🎯 Quick Start
