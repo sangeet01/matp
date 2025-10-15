@@ -1,4 +1,4 @@
-# 🎭 Matryoshka Protocol
+# 🪆 Matryoshka Protocol
 
 **An invisible secure messaging protocol**
 
