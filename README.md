@@ -1,7 +1,7 @@
-Matryoshka Protocol
+
 # Matryoshka Protocol
 
-**The world's first invisible secure messaging protocol**
+** An invisible secure messaging protocol**
 
 Matryoshka Protocol combines steganography, fractal encryption, and zero-knowledge proofs to create truly undetectable secure communication.
 
