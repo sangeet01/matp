@@ -1,6 +1,6 @@
 # 🎭 Matryoshka Protocol
 
-**An world's first truly invisible secure messaging protocol**
+**An invisible secure messaging protocol**
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
