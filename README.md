@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-quantum%20resistant-red.svg)](docs/security.md)
 
-## 🚀 Revolutionary Features
+## 🚀 Characteristic Features
 
 ### 👻 **Ghost Layer** - Perfect Invisibility
 - Messages hidden in normal web traffic (JSON APIs, HTTP headers)
