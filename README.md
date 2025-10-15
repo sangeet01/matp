@@ -79,7 +79,7 @@ print("Observer sees:", ghost_msg.cover_data.decode()[:100], "...")
 # Receive and decrypt
 received = bob.receive_message(ghost_msg)
 print("Received:", received)
-# Output: This message is completely invisible! �
+# Output: This message is completely invisible! 
 
 # Verify mathematical proof of innocence
 is_innocent = bob.verify_innocence(ghost_msg.innocence_proof)
