@@ -15,7 +15,7 @@ We welcome contributions in:
 ## Getting Started
 
 1. **Fork the repository**
-2. **Clone your fork**: `git clone https://github.com/YOUR_USERNAME/matp.git`
+2. **Clone your fork**: `git clone https://github.com/sangeet01/matp.git`
 3. **Create a branch**: `git checkout -b feature/your-feature`
 4. **Make changes**
 5. **Test**: Run test suite to ensure nothing breaks
