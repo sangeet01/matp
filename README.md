@@ -37,13 +37,13 @@
 
 ```bash
 # Basic installation
-pip install matryoshka-protocol
+pip install matp
 
 # With quantum resistance
-pip install matryoshka-protocol[quantum]
+pip install matp[quantum]
 
 # Full features (image steganography, HTTP cover traffic)
-pip install matryoshka-protocol[full]
+pip install matp[full]
 ```
 
 ## 🎯 Quick Start
@@ -64,7 +64,7 @@ alice_ephemeral = alice.initiate_handshake(bob.identity_public, bob_prekey.publi
 bob.complete_handshake(alice.identity_public, alice_ephemeral, bob_prekey)
 
 # Send invisible message
-message = "This message is completely invisible! 🚀"
+message = "This message is completely invisible!"
 ghost_msg = alice.send_message(
     message,
     use_steganography=True,      # Hide in web traffic
@@ -79,7 +79,7 @@ print("Observer sees:", ghost_msg.cover_data.decode()[:100], "...")
 # Receive and decrypt
 received = bob.receive_message(ghost_msg)
 print("Received:", received)
-# Output: This message is completely invisible! 🚀
+# Output: This message is completely invisible! �
 
 # Verify mathematical proof of innocence
 is_innocent = bob.verify_innocence(ghost_msg.innocence_proof)
