@@ -31,25 +31,38 @@ jobs:
           toolchain: stable
           components: rustfmt, clippy
 
+      - name: Check if Rust project
+        id: check-rust
+        run: |
+          if [ -f "Cargo.toml" ]; then
+            echo "rust=true" >> $GITHUB_OUTPUT
+          else
+            echo "rust=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Check formatting
+        if: steps.check-rust.outputs.rust == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --all -- --check
 
       - name: Run Clippy
+        if: steps.check-rust.outputs.rust == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: -- -D warnings
 
       - name: Build
+        if: steps.check-rust.outputs.rust == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --verbose
 
       - name: Run tests
+        if: steps.check-rust.outputs.rust == 'true'
         uses: actions-rs/cargo@v1
         with:
           command: test
