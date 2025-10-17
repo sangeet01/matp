@@ -5,7 +5,7 @@
 //! and AES-256-GCM for authenticated encryption.
 
 use aes_gcm::{
-    aead::{Aead, KeyInit, OsRng},
+    aead::{Aead, AeadCore, KeyInit, OsRng},
     Aes256Gcm, Nonce,
 };
 use hkdf::Hkdf;
@@ -54,7 +54,7 @@ pub fn kdf_chain(chain_key: &ChainKey, info: &[u8]) -> Result<(MessageKey, Chain
 pub fn encrypt(
     key: &MessageKey,
     plaintext: &[u8],
-    associated_data: &[u8],
+    _associated_data: &[u8],
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = Aes256Gcm::new_from_slice(&key.0).unwrap();
     let nonce = Aes256Gcm::generate_nonce(&mut OsRng); // 96-bit nonce
@@ -70,7 +70,7 @@ pub fn encrypt(
 pub fn decrypt(
     key: &MessageKey,
     ciphertext_with_nonce: &[u8],
-    associated_data: &[u8],
+    _associated_data: &[u8],
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = Aes256Gcm::new_from_slice(&key.0).unwrap();
     let (nonce_bytes, ciphertext) = ciphertext_with_nonce.split_at(12);
