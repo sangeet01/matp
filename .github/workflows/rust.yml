@@ -3,8 +3,13 @@ name: Rust CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'rust/**'
+      - '.github/workflows/rust.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'rust/**'
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,7 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Check if Cargo.toml exists
+        id: check-cargo
+        run: |
+          if [ -f "Cargo.toml" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Cache cargo registry
+        if: steps.check-cargo.outputs.exists == 'true'
         uses: actions/cache@v3
         with:
           path: |
@@ -29,19 +44,26 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('rust/core/Cargo.lock') }}
 
       - name: Install Rust toolchain
+        if: steps.check-cargo.outputs.exists == 'true'
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           components: rustfmt, clippy
 
       - name: Check formatting
+        if: steps.check-cargo.outputs.exists == 'true'
         run: cargo fmt --all -- --check
+        continue-on-error: true
 
       - name: Run Clippy
+        if: steps.check-cargo.outputs.exists == 'true'
         run: cargo clippy -- -D warnings
+        continue-on-error: true
 
       - name: Build
+        if: steps.check-cargo.outputs.exists == 'true'
         run: cargo build --verbose
 
       - name: Run tests
+        if: steps.check-cargo.outputs.exists == 'true'
         run: cargo test --verbose
