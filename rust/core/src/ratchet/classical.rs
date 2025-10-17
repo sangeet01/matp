@@ -9,11 +9,11 @@ use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
 use crate::crypto::{
     classical::{self, ChainKey, MessageKey, RootKey},
     fractal::{Fractal, PQFractalBundle},
+    CryptoError,
 };
-use crate::zkp::engine::{
-    PublicInputs as ZkpPublicInputs, Witness as ZkpWitness, ZkpEngine,
-    ZkpOfInnocence,
-};
+use crate::zkp::{ZkpEngine, TrafficPattern};
+use hkdf::Hkdf;
+use sha2::Sha256;
 
 use super::{
     state::{MessageHeader, MtpPacket},
@@ -132,18 +132,17 @@ impl MatryoshkaRatchet {
             dh_new_pub_key: None, // Simplified for now
             decoy_flag: self.decoy_mode,
             zkp_innocence: if self.decoy_mode {
-                // Construct the witness for the ZKP circuit.
-                // This is a simplified representation. A real witness would be more complex.
-                let witness = ZkpWitness {
-                    decoy_password: &[], // We don't have the password here, only its hash.
-                    classical_handshake_material: &[], // This would come from the handshake.
-                    chain_key: &sending_ck.0,
-                    message_key: &message_key.0,
+                // Generate a simple proof for decoy messages
+                let zkp_engine = ZkpEngine::new();
+                let traffic = TrafficPattern {
+                    request_sizes: vec![1024, 2048, 512],
+                    timing_intervals: vec![100, 150, 200],
+                    content_types: vec!["application/json".to_string()],
                 };
-                Some(ZkpEngine::prove(&witness)?)
+                zkp_engine.prove_innocence(&traffic).ok()
             } else {
                 None
-            },
+            }
         };
 
         self.msg_num_send += 1;
