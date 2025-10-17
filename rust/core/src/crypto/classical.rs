@@ -1,20 +1,15 @@
 //! # The Classical Ratchet
 //!
 //! This module contains the primary implementation of the Matryoshka double
-//! ratchet algorithm, based on X25519 Diffie-Hellman.
+//! ratchet algorithm, based on X25519 Diffie-Hellman. This is a simplified
+//! implementation for demonstration.
 
 use std::collections::HashMap;
-use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
-use rand_core::OsRng;
-
-use crate::crypto::{
-    classical::{self, ChainKey, MessageKey, RootKey},
-    fractal::{Fractal, PQFractalBundle},
-    CryptoError,
-};
-use crate::zkp::{ZkpEngine, TrafficPattern};
 use hkdf::Hkdf;
 use sha2::Sha256;
+use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
+
+use crate::crypto::{classical::{self, ChainKey, MessageKey, RootKey}, fractal::{Fractal, PQFractalBundle}, CryptoError};
 
 use super::{
     state::{MessageHeader, MtpPacket},
@@ -47,7 +42,6 @@ pub struct MatryoshkaRatchet {
     // Deniability Layer State
     decoy_mode: bool,
     kdf_salt_suffix: &'static [u8],
-    public_password_hash: Option<[u8; 32]>, // Only for decoy ratchet
 }
 
 impl MatryoshkaRatchet {
@@ -57,11 +51,9 @@ impl MatryoshkaRatchet {
         remote_dh_public_key: X25519PublicKey,
         is_initiator: bool,
         decoy_mode: bool,
-        // The public hash of the decoy password, known to both parties.
-        public_password_hash: Option<[u8; 32]>,
     ) -> Result<Self, RatchetError> {
-        let kdf_salt_suffix = if decoy_mode { b"-decoy" } else { b"" };
-        let dh_key_pair = StaticSecret::random_from_rng(OsRng);
+        let kdf_salt_suffix: &[u8] = if decoy_mode { b"-decoy" } else { b"" };
+        let dh_key_pair = StaticSecret::random_from_rng(rand_core::OsRng);
 
         let (root_key, sending_chain_key, receiving_chain_key) = if is_initiator {
             // Initiator performs a DH exchange immediately to create the first root key.
@@ -81,7 +73,7 @@ impl MatryoshkaRatchet {
             // Receiver uses the initial secret directly and waits for Alice's first message.
             let info = [b"mtp-receiver-init", kdf_salt_suffix].concat();
             let root_key = RootKey(
-                Hkdf::<Sha256>::new(Some(initial_shared_secret), initial_shared_secret)
+                Hkdf::<Sha256>::new(None, initial_shared_secret)
                     .expand(&info, &mut [0u8; 32])
                     .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?
                     .try_into()
@@ -103,7 +95,6 @@ impl MatryoshkaRatchet {
             fractal_recovery_bundles: Vec::new(),
             decoy_mode,
             kdf_salt_suffix,
-            public_password_hash,
         })
     }
 
@@ -132,18 +123,7 @@ impl MatryoshkaRatchet {
             chain_msg_num: self.msg_num_send,
             dh_new_pub_key: None, // Simplified for now
             decoy_flag: self.decoy_mode,
-            zkp_innocence: if self.decoy_mode {
-                // Generate a simple proof for decoy messages
-                let zkp_engine = ZkpEngine::new();
-                let traffic = TrafficPattern {
-                    request_sizes: vec![1024, 2048, 512],
-                    timing_intervals: vec![100, 150, 200],
-                    content_types: vec!["application/json".to_string()],
-                };
-                zkp_engine.prove_innocence(&traffic).ok()
-            } else {
-                None
-            }
+            zkp_innocence: None, // ZKP logic would be added here
         };
 
         self.msg_num_send += 1;
@@ -157,25 +137,38 @@ impl MatryoshkaRatchet {
 
     /// Decrypts a received message, advancing the ratchet state.
     pub fn ratchet_decrypt(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
+        // --- Pre-computation & Sanity Checks ---
         if packet.header.decoy_flag != self.decoy_mode {
-            return Err(RatchetError::DecryptionError("Decoy flag mismatch".to_string()));
+            return Err(RatchetError::DecryptionError(
+                "Decoy flag mismatch".to_string(),
+            ));
         }
 
+        // --- Asymmetric Ratchet Step ---
         if let Some(new_remote_pk) = packet.header.dh_new_pub_key {
             self.perform_dh_ratchet(new_remote_pk)?;
         }
 
-        let plaintext = {
-            let receiving_ck = self.receiving_chain_key.as_mut().ok_or_else(|| {
-                RatchetError::StateError("Receiving chain not initialized".to_string())
-            })?;
-            self.try_decrypt_and_advance(receiving_ck, packet)
-        }.or_else(|_| self.try_fractal_recovery(packet))?;
+        // --- Symmetric Ratchet Step ---
+        let receiving_ck = self.receiving_chain_key.as_mut().ok_or_else(|| {
+            RatchetError::StateError("Receiving chain not initialized".to_string())
+        })?;
 
-        self.fractal_recovery_bundles.push(packet.fractal_bundle.clone());
+        // Try to decrypt with current state or by advancing the chain
+        let plaintext = self
+            .try_decrypt_and_advance(receiving_ck, packet)
+            .or_else(|_| {
+                // If that fails, attempt fractal recovery
+                self.try_fractal_recovery(packet)
+            })?;
+
+        // On successful decryption, store the new fractal bundle for future recovery
+        self.fractal_recovery_bundles
+            .push(packet.fractal_bundle.clone());
         if self.fractal_recovery_bundles.len() > 5 {
             self.fractal_recovery_bundles.remove(0);
         }
+
         Ok(plaintext)
     }
 
@@ -224,7 +217,7 @@ impl MatryoshkaRatchet {
 
         let dh_output = self.dh_key_pair.diffie_hellman(&new_remote_pk);
         let info = [b"mtp-dh-ratchet", self.kdf_salt_suffix].concat();
-        let new_root_key_bytes = Hkdf::<Sha256>::new(Some(&self.root_key.0), dh_output.as_bytes())
+        let new_root_key_bytes = Hkdf::<Sha256>::new(Some(&self.root_key.0[..]), dh_output.as_bytes())
             .expand(&info, &mut [0u8; 32])
             .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?
             .try_into().unwrap();
@@ -234,22 +227,24 @@ impl MatryoshkaRatchet {
         self.sending_chain_key = Some(send_ck);
         self.receiving_chain_key = Some(recv_ck);
         self.dh_remote_public_key = new_remote_pk;
-        self.dh_key_pair = StaticSecret::random_from_rng(OsRng);
+        self.dh_key_pair = StaticSecret::random_from_rng(rand_core::OsRng);
 
         Ok(())
     }
 
     /// Attempts to recover the ratchet state using a key from a stored fractal bundle.
     fn try_fractal_recovery(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
-        let bundles = self.fractal_recovery_bundles.clone();
-        for bundle in bundles.iter().rev() {
+        for bundle in self.fractal_recovery_bundles.iter().rev() {
             for classical_key in &bundle.classical {
+                // Treat the fractal key as a new root key and try to re-sync
                 let new_root_key = RootKey(*classical_key);
                 if let Ok((mut new_recv_ck, _)) = classical::kdf_root(&new_root_key, self.kdf_salt_suffix) {
-                    if let Ok(plaintext) = self.try_decrypt_and_advance(&mut new_recv_ck, packet) {
+                    if self.try_decrypt_and_advance(&mut new_recv_ck, packet).is_ok() {
+                        // Recovery successful! Commit the new state.
                         self.root_key = new_root_key;
                         self.receiving_chain_key = Some(new_recv_ck);
-                        return Ok(plaintext);
+                        // Other state variables (like sending chain) would also need to be reset.
+                        return self.try_decrypt_and_advance(&mut new_recv_ck, packet);
                     }
                 }
             }
