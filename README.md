@@ -168,7 +168,7 @@ python test_matryoshka.py
                  │
     ┌─────────────────────────────┐
     │     Double Ratchet Core     │
-    │   (Signal-Compatible)       │
+    │                             │
     └─────────────────────────────┘
                  │
     ┌─────────────────────────────┐
