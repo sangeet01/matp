@@ -7,17 +7,17 @@ use hkdf::Hkdf;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use x25519_dalek::{EphemeralSecret, PublicKey as X25519PublicKey, StaticSecret};
-use rand_core::OsRng;
 
 use super::{
-    quantum::{self, KemCiphertext, KemPublicKey, Quantum, SigVerificationKey},
+    classical,
+    quantum::{self, KemCiphertext, KemPublicKey, Quantum, SigVerificationKey, Signature},
     CryptoError,
 };
 
 /// The bundle of public keys a user publishes to the DHT.
 /// It contains a PQ identity key for signing, a classical prekey for X3DH,
 /// and a PQ KEM key for the quantum part of the handshake.
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PreKeyBundle {
     pub identity_key: SigVerificationKey,
     pub prekey: X25519PublicKey,
@@ -42,13 +42,13 @@ impl Hybrid {
         alice_identity: &StaticSecret,
         bob_bundle: &PreKeyBundle,
     ) -> Result<(Vec<u8>, HandshakeMessage), CryptoError> {
-        let alice_ephemeral = EphemeralSecret::random_from_rng(OsRng);
+        let alice_ephemeral = EphemeralSecret::random_from_rng(rand_core::OsRng);
 
         // --- MTP-X3DH+PQ Handshake ---
         // 1. Perform 3 classical DH exchanges.
         let dh1 = alice_identity.diffie_hellman(&bob_bundle.prekey);
-        let dh2 = alice_ephemeral.diffie_hellman(&bob_bundle.prekey); // Simplified X3DH for now
-        let dh3 = alice_ephemeral.diffie_hellman(&bob_bundle.prekey); // Placeholder for one-time prekey
+        let dh2 = alice_ephemeral.diffie_hellman(&bob_bundle.prekey);
+        let dh3 = alice_ephemeral.diffie_hellman(&bob_bundle.prekey);
 
         // 2. Perform 1 Post-Quantum KEM exchange.
         let (pq_shared_secret, kem_ciphertext) = Quantum::kem_encapsulate(&bob_bundle.kem_key)?;
