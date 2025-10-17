@@ -52,7 +52,7 @@ impl AdaptiveRatchet {
         decoy_mode: bool,
     ) -> Result<Self, RatchetError> {
         Ok(Self {
-            classical_ratchet: MatryoshkaRatchet::new(initial_shared_secret, remote_dh_public_key, is_initiator, decoy_mode)?,
+            classical_ratchet: MatryoshkaRatchet::new(initial_shared_secret, remote_dh_public_key, is_initiator, decoy_mode, None)?,
             quantum_ratchet: None,
             is_quantum_mode: false,
         })
@@ -87,3 +87,4 @@ impl AdaptiveRatchet {
         }
     }
 }
+
