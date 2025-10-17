@@ -1,8 +1,3 @@
-[package]
-name = "matryoshka-protocol"
-version = "0.1.0"
-edition = "2021"
-
-[lib]
-name = "matryoshka_core"
-path = "tests/lib.rs"
+[workspace]
+members = ["core"]
+resolver = "2"
