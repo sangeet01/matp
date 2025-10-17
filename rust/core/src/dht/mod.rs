@@ -11,4 +11,6 @@ pub mod kademlia;
 pub enum DhtError {
     #[error("Key not found in the DHT network after an exhaustive search.")]
     KeyNotFound,
+    #[error("Proof of work mining failed")]
+    PowFailed,
 }
