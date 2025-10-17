@@ -69,7 +69,7 @@ impl AdaptiveRatchet {
         }
     }
 
-    pub fn encrypt(&mut self, plaintext: &[u8]) -> Result<MtpPacket, RatchetError> {
+    pub fn ratchet_encrypt(&mut self, plaintext: &[u8]) -> Result<MtpPacket, RatchetError> {
         if self.is_quantum_mode {
             self.quantum_ratchet.as_mut().unwrap().ratchet_encrypt(plaintext)
         } else {
@@ -77,7 +77,7 @@ impl AdaptiveRatchet {
         }
     }
 
-    pub fn decrypt(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
+    pub fn ratchet_decrypt(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
         if self.is_quantum_mode {
             // A real implementation would need to check if the packet is classical or quantum
             // and route accordingly, to handle the transition period.
@@ -87,4 +87,3 @@ impl AdaptiveRatchet {
         }
     }
 }
-
