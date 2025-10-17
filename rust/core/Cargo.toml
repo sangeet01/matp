@@ -19,7 +19,7 @@ hkdf = "0.12"
 sha2 = "0.10"
 
 # Post-Quantum Cryptography (using a standard FFI wrapper)
-oqs = { version = "0.10", features = ["kyber768", "dilithium"] }
+oqs = { version = "0.10", features = ["kyber", "dilithium"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -36,5 +36,6 @@ kamadak-exif = "0.5.5"
 # Utilities
 thiserror = "1.0"
 ethnum = "1.4"
+
 
 
