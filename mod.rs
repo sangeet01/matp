@@ -1,19 +1,21 @@
-//! # The Ghost Module
+//! # The Crypto Module
 //!
-//! This module implements the "Chameleon Steganography" layer of the
-//! Matryoshka Protocol. It is responsible for hiding encrypted MTP packets
-//! inside various forms of plausible-looking cover traffic.
+//! This module contains all core cryptographic primitives and operations
+//! for the Matryoshka Protocol, separated into logical sub-modules.
 
-pub mod engine;
-pub mod strategies;
-pub mod cover_traffic;
-pub mod fast_ghost;
+// Declare the sub-modules as per our architecture.
+pub mod classical;
+pub mod quantum;
+pub mod hybrid;
+pub mod fractal;
 
-// Define a common, top-level error type for all steganography operations.
+// Define a common, top-level error type for all cryptographic operations.
 #[derive(Debug, thiserror::Error)]
-pub enum GhostError {
-    #[error("Failed to embed payload into cover traffic: {0}")]
-    EmbeddingError(String),
-    #[error("Failed to extract payload from ghost packet: {0}")]
-    ExtractionError(String),
+pub enum CryptoError {
+    #[error("AEAD encryption failed")]
+    EncryptionError,
+    #[error("AEAD decryption failed: tag mismatch or invalid ciphertext")]
+    DecryptionError,
+    #[error("Key derivation failed")]
+    KdfError,
 }
