@@ -5,7 +5,7 @@
 use serde_json::Value;
 
 use crate::ghost::{
-    cover_traffic::{find_and_replace_payload, get_random_json_template},
+    cover_traffic::json_templates::{find_and_replace_payload, get_random_json_template},
     engine::EmbeddingStrategy,
     GhostError,
 };
