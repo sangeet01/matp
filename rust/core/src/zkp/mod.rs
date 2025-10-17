@@ -1,7 +1,8 @@
 use sha2::{Sha256, Digest};
 use rand::{Rng, thread_rng};
+use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InnocenceProof {
     pub commitment: [u8; 32],
     pub challenge: [u8; 32], 
