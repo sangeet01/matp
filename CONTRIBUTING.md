@@ -8,9 +8,7 @@ We welcome contributions in:
 - **Cryptographic Review** - Security analysis and formal verification
 - **Performance Optimization** - Faster encryption, steganography, ZKP generation
 - **Cover Traffic Types** - New steganography methods (images, video, DNS)
-- **Mobile Implementations** - iOS and Android SDKs
-- **Documentation** - Tutorials, examples, translations
-- **Testing** - Unit tests, integration tests, fuzzing
+
 
 ## Getting Started
 
