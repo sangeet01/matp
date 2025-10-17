@@ -2,17 +2,13 @@
 name = "mtp-core"
 version = "0.1.0"
 edition = "2021"
-authors = ["Gemini Code Assist <gemini@google.com>"]
+authors = ["Sangeet Sharma"]
 description = "Core cryptographic library for the Matryoshka Protocol (MTP)"
 license = "Apache-2.0"
 
 [lib]
 name = "mtp_core"
 path = "src/lib.rs"
-
-[[bin]]
-name = "mtp-simulation"
-path = "src/main.rs"
 
 [dependencies]
 # Classical Cryptography
@@ -34,8 +30,8 @@ tokio = { version = "1", features = ["sync", "rt-multi-thread", "macros"] }
 
 # Steganography Dependencies
 image = "0.24"
-piexif = "0.5"
 serde_json = "1.0"
+kamadak-exif = "0.5.5"
 
 # Utilities
 thiserror = "1.0"
