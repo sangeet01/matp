@@ -3,19 +3,18 @@
 //! This module defines the data structures that represent the state of a
 //! Matryoshka ratchet session.
 
-use std::collections::HashMap;
-use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
+use x25519_dalek::PublicKey as X25519PublicKey;
+use serde::{Serialize, Deserialize};
 
-use crate::crypto::{
-    classical::{ChainKey, MessageKey, RootKey},
-    fractal::PQFractalBundle,
-    quantum::Signature,
-    zkp::engine::ZkpOfInnocence,
-};
+use crate::crypto::fractal::PQFractalBundle;
+use crate::zkp::InnocenceProof;
+
+// Type alias for clarity
+pub type ZkpOfInnocence = InnocenceProof;
 
 /// The header attached to every encrypted message. It contains the necessary
 /// public information for the recipient to decrypt the message.
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct MessageHeader {
     /// The recipient's public key that this message is intended for.
     pub dh_ratchet_pub_key: X25519PublicKey,
@@ -32,7 +31,7 @@ pub struct MessageHeader {
 }
 
 /// The full, encrypted message packet.
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct MtpPacket {
     pub header: MessageHeader,
     /// The AEAD-encrypted ciphertext (nonce is prepended).
