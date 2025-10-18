@@ -7,6 +7,7 @@
 pub mod engine;
 pub mod strategies;
 pub mod cover_traffic;
+pub mod fast_ghost;
 
 pub use engine::GhostEngine;
 pub use fast_ghost::FastGhost;
@@ -18,5 +19,4 @@ pub enum GhostError {
     EmbeddingError(String),
     #[error("Failed to extract payload from ghost packet: {0}")]
     ExtractionError(String),
-
 }
