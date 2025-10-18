@@ -11,7 +11,11 @@ use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 use rand::seq::SliceRandom;
 use sha2::{Digest, Sha256};
-use uint::U256;
+use uint::construct_uint;
+
+construct_uint! {
+    pub struct U256(4);
+}
 
 use crate::crypto::hybrid::PreKeyBundle;
 use crate::crypto::quantum::SigVerificationKey;
