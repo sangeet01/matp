@@ -5,7 +5,7 @@
 //! - IP-based rate limiting
 //! - Fractal commitment (optional Matryoshka enhancement)
 
-use std::collections::{HashMap, BTreeSet};
+use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -25,9 +25,9 @@ use super::DhtError;
 type NodeId = [u8; 32];
 
 const POW_DIFFICULTY: u32 = 4;
-const IP_JOIN_COOLDOWN_SECS: u64 = 3600;
 
 /// Represents a single peer with Sybil protection.
+#[allow(dead_code)]
 struct DhtNode {
     id: NodeId,
     pow_nonce: u64,
@@ -157,7 +157,7 @@ impl DhtNetwork {
     fn find_closest_nodes(&self, key_hash: &NodeId) -> Vec<Arc<Mutex<DhtNode>>> {
         let key_hash_int = U256::from_big_endian(key_hash);
         let k = 3;
-        let mut shortlist: BTreeSet<_> = self.nodes.choose_multiple(&mut rand::thread_rng(), k)
+        let mut shortlist: Vec<_> = self.nodes.choose_multiple(&mut rand::thread_rng(), k)
             .map(|node_arc| {
                 let node = node_arc.lock().unwrap();
                 let node_id_int = U256::from_big_endian(&node.id);
@@ -167,6 +167,7 @@ impl DhtNetwork {
                 let adjusted_distance = distance / U256::from(node.reputation_score() as u64 + 1);
                 (adjusted_distance, node_arc.clone())
             }).collect();
+        shortlist.sort_by_key(|(dist, _)| *dist);
         shortlist.into_iter().take(k).map(|(_, node)| node).collect()
     }
 

@@ -36,7 +36,8 @@ impl FastGhost {
     /// Send invisible message - returns JSON cover traffic
     pub fn send(&self, message: &[u8]) -> Result<Value, GhostError> {
         // Generate nonce
-        let nonce = Nonce::from_slice(&rand::random::<[u8; 12]>());
+        let nonce_bytes = rand::random::<[u8; 12]>();
+        let nonce = Nonce::from_slice(&nonce_bytes);
 
         // Encrypt
         let ciphertext = self

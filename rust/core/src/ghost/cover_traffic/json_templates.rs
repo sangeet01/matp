@@ -217,6 +217,7 @@ impl HybridCoverGenerator {
 }
 
 /// Legacy function for compatibility
+#[allow(dead_code)]
 fn get_json_api_templates() -> Vec<Value> {
     HybridCoverGenerator::new()
         .templates

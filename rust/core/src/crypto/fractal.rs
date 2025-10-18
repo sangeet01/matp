@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
 use super::{
-    classical::{ChainKey, RootKey},
+    classical::ChainKey,
     CryptoError,
 };
 

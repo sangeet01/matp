@@ -52,7 +52,8 @@ impl Quantum {
     pub fn kem_decapsulate(sk: &KemSecretKey, ciphertext: &KemCiphertext) -> Result<Vec<u8>, CryptoError> {
         let kem = Kem::new(KemAlgorithm::Kyber512).map_err(|_| CryptoError::KdfError)?;
         let secret_key = kem.secret_key_from_bytes(&sk.0).ok_or(CryptoError::KdfError)?;
-        let shared_secret = kem.decapsulate(&secret_key, &ciphertext.0).map_err(|_| CryptoError::DecryptionError)?;
+        let ct = kem.ciphertext_from_bytes(&ciphertext.0).ok_or(CryptoError::DecryptionError)?;
+        let shared_secret = kem.decapsulate(&secret_key, &ct).map_err(|_| CryptoError::DecryptionError)?;
         Ok(shared_secret.into_vec())
     }
 
@@ -66,6 +67,7 @@ impl Quantum {
     pub fn verify(pk: &SigVerificationKey, message: &[u8], signature: &Signature) -> Result<(), CryptoError> {
         let sig = Sig::new(SigAlgorithm::Dilithium2).map_err(|_| CryptoError::KdfError)?;
         let public_key = sig.public_key_from_bytes(&pk.0).ok_or(CryptoError::KdfError)?;
-        sig.verify(message, &signature.0, &public_key).map_err(|_| CryptoError::DecryptionError)
+        let sig_obj = sig.signature_from_bytes(&signature.0).ok_or(CryptoError::DecryptionError)?;
+        sig.verify(message, &sig_obj, &public_key).map_err(|_| CryptoError::DecryptionError)
     }
 }

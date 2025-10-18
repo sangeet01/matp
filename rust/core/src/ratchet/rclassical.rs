@@ -24,6 +24,7 @@ use super::{
 const MAX_SKIPPED_MESSAGES: usize = 100;
 
 /// The state machine for a single Matryoshka ratchet session (either real or decoy).
+#[allow(dead_code)]
 pub struct MatryoshkaRatchet {
     // Cryptographic State
     root_key: RootKey,
@@ -67,26 +68,22 @@ impl MatryoshkaRatchet {
             // Initiator performs a DH exchange immediately to create the first root key.
             let dh_output = dh_key_pair.diffie_hellman(&remote_dh_public_key);
             let info = [b"mtp-dh-init", kdf_salt_suffix].concat();
-            let root_key = RootKey(
-                Hkdf::<Sha256>::new(Some(initial_shared_secret), dh_output.as_bytes())
-                    .expand(&info, &mut [0u8; 32])
-                    .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?
-                    .try_into()
-                    .unwrap(),
-            );
+            let mut root_key_bytes = [0u8; 32];
+            Hkdf::<Sha256>::new(Some(initial_shared_secret), dh_output.as_bytes())
+                .expand(&info, &mut root_key_bytes)
+                .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?;
+            let root_key = RootKey(root_key_bytes);
 
             let (send_ck, recv_ck) = classical::kdf_root(&root_key, kdf_salt_suffix)?;
             (root_key, Some(send_ck), Some(recv_ck))
         } else {
             // Receiver uses the initial secret directly and waits for Alice's first message.
             let info = [b"mtp-receiver-init", kdf_salt_suffix].concat();
-            let root_key = RootKey(
-                Hkdf::<Sha256>::new(Some(initial_shared_secret), initial_shared_secret)
-                    .expand(&info, &mut [0u8; 32])
-                    .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?
-                    .try_into()
-                    .unwrap(),
-            );
+            let mut root_key_bytes = [0u8; 32];
+            Hkdf::<Sha256>::new(Some(initial_shared_secret), initial_shared_secret)
+                .expand(&info, &mut root_key_bytes)
+                .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?;
+            let root_key = RootKey(root_key_bytes);
             // Chain keys will be initialized on the first received message.
             (root_key, None, None)
         };
@@ -165,12 +162,44 @@ impl MatryoshkaRatchet {
             self.perform_dh_ratchet(new_remote_pk)?;
         }
 
-        let plaintext = {
-            let receiving_ck = self.receiving_chain_key.as_mut().ok_or_else(|| {
-                RatchetError::StateError("Receiving chain not initialized".to_string())
-            })?;
-            self.try_decrypt_and_advance(receiving_ck, packet)
-        }.or_else(|_| self.try_fractal_recovery(packet))?;
+        let plaintext = match self.receiving_chain_key.as_mut() {
+            Some(receiving_ck) => {
+                let result = {
+                    let remote_pk_bytes = packet.header.dh_ratchet_pub_key.as_bytes().to_vec();
+                    let msg_num = packet.header.chain_msg_num;
+                    
+                    if let Some(message_key) = self.skipped_message_keys.remove(&(remote_pk_bytes.clone(), msg_num)) {
+                        classical::decrypt(&message_key, &packet.ciphertext, &[]).map_err(|e| RatchetError::Crypto(e))
+                    } else {
+                        while self.msg_num_recv < msg_num {
+                            if self.skipped_message_keys.len() >= MAX_SKIPPED_MESSAGES {
+                                return Err(RatchetError::StateError("Max skipped messages exceeded".to_string()));
+                            }
+                            let (skipped_mk, next_ck) = classical::kdf_chain(receiving_ck, self.kdf_salt_suffix)?;
+                            self.skipped_message_keys.insert((remote_pk_bytes.clone(), self.msg_num_recv), skipped_mk);
+                            *receiving_ck = next_ck;
+                            self.msg_num_recv += 1;
+                        }
+                        
+                        if self.msg_num_recv == msg_num {
+                            let (message_key, next_ck) = classical::kdf_chain(receiving_ck, self.kdf_salt_suffix)?;
+                            let plaintext = classical::decrypt(&message_key, &packet.ciphertext, &[]).map_err(|e| RatchetError::Crypto(e))?;
+                            *receiving_ck = next_ck;
+                            self.msg_num_recv += 1;
+                            Ok(plaintext)
+                        } else {
+                            Err(RatchetError::DecryptionError("Message is from the past or state is out of sync".to_string()))
+                        }
+                    }
+                };
+                
+                match result {
+                    Ok(pt) => pt,
+                    Err(_) => self.try_fractal_recovery(packet)?
+                }
+            },
+            None => return Err(RatchetError::StateError("Receiving chain not initialized".to_string()))
+        };
 
         self.fractal_recovery_bundles.push(packet.fractal_bundle.clone());
         if self.fractal_recovery_bundles.len() > 5 {
@@ -190,7 +219,7 @@ impl MatryoshkaRatchet {
 
         // 1. Check if it's a skipped message we've already stored a key for
         if let Some(message_key) = self.skipped_message_keys.remove(&(remote_pk_bytes.clone(), msg_num)) {
-            return classical::decrypt(&message_key, &packet.ciphertext, &[]);
+            return classical::decrypt(&message_key, &packet.ciphertext, &[]).map_err(|e| RatchetError::Crypto(e));
         }
 
         // 2. If not, try to advance the current chain to catch up
@@ -224,10 +253,10 @@ impl MatryoshkaRatchet {
 
         let dh_output = self.dh_key_pair.diffie_hellman(&new_remote_pk);
         let info = [b"mtp-dh-ratchet", self.kdf_salt_suffix].concat();
-        let new_root_key_bytes = Hkdf::<Sha256>::new(Some(&self.root_key.0), dh_output.as_bytes())
-            .expand(&info, &mut [0u8; 32])
-            .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?
-            .try_into().unwrap();
+        let mut new_root_key_bytes = [0u8; 32];
+        Hkdf::<Sha256>::new(Some(&self.root_key.0), dh_output.as_bytes())
+            .expand(&info, &mut new_root_key_bytes)
+            .map_err(|_| RatchetError::Crypto(CryptoError::KdfError))?;
         
         self.root_key = RootKey(new_root_key_bytes);
         let (send_ck, recv_ck) = classical::kdf_root(&self.root_key, self.kdf_salt_suffix)?;
