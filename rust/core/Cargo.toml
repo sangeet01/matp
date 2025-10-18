@@ -19,7 +19,7 @@ hkdf = "0.12"
 sha2 = "0.10.8"
 
 # Post-Quantum Cryptography (using a standard FFI wrapper)
-oqs = { version = "0.10.1", features = ["kyber768", "dilithium2"] }
+oqs = { version = "0.10.1", features = ["kyber", "dilithium"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }
@@ -32,10 +32,11 @@ tokio = { version = "1.35.1", features = ["sync", "rt-multi-thread", "macros"] }
 # Steganography Dependencies
 image = "0.24.7"
 serde_json = "1.0"
-exif = "0.5.5"
+kamadak-exif = "0.5"
 
 # Utilities
 thiserror = "1.0"
-ethnum = "1.4"
+uint = "0.9"
 rand = "0.8.5"
+rand_chacha = "0.3"
 
