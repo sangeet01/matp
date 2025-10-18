@@ -4,6 +4,3 @@
 //! such as hiding data in JSON or image EXIF metadata.
 pub mod json_api;
 pub mod exif_image;
-
-
-

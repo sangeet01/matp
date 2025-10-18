@@ -18,5 +18,4 @@ pub enum RatchetError {
     StateError(String),
     #[error("Crypto error: {0}")]
     Crypto(#[from] crate::crypto::CryptoError),
-
 }
