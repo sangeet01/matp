@@ -4,7 +4,7 @@
 //! protocol to dynamically switch from the fast classical ratchet to a more
 //! secure, fully post-quantum ratchet in response to a perceived threat.
 
-use super::{classical::MatryoshkaRatchet, state::MtpPacket, RatchetError};
+use super::{rclassical::MatryoshkaRatchet, state::MtpPacket, RatchetError};
 use x25519_dalek::PublicKey as X25519PublicKey;
 
 /// Represents the reason for triggering the switch to quantum mode.
@@ -87,4 +87,5 @@ impl AdaptiveRatchet {
         }
     }
 }
+
 
