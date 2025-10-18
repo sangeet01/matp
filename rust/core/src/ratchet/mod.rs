@@ -3,7 +3,7 @@
 //! This module contains the core state machine logic for the Matryoshka
 //! double ratchet algorithm and its variants.
 
-pub mod classical;
+pub mod rclassical;
 pub mod state;
 pub mod adaptive;
 
@@ -18,4 +18,5 @@ pub enum RatchetError {
     StateError(String),
     #[error("Crypto error: {0}")]
     Crypto(#[from] crate::crypto::CryptoError),
+
 }
