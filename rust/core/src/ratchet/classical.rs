@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 use x25519_dalek::{PublicKey as X25519PublicKey, StaticSecret};
+use rand_core::OsRng;
 
 use crate::crypto::{
     classical::{self, ChainKey, MessageKey, RootKey},
@@ -59,8 +60,8 @@ impl MatryoshkaRatchet {
         // The public hash of the decoy password, known to both parties.
         public_password_hash: Option<[u8; 32]>,
     ) -> Result<Self, RatchetError> {
-        let kdf_salt_suffix = if decoy_mode { b"-decoy" } else { b"" };
-        let dh_key_pair = StaticSecret::random_from_rng(rand_core::OsRng);
+        let kdf_salt_suffix: &[u8] = if decoy_mode { b"-decoy" } else { b"" };
+        let dh_key_pair = StaticSecret::random_from_rng(OsRng);
 
         let (root_key, sending_chain_key, receiving_chain_key) = if is_initiator {
             // Initiator performs a DH exchange immediately to create the first root key.
@@ -156,38 +157,25 @@ impl MatryoshkaRatchet {
 
     /// Decrypts a received message, advancing the ratchet state.
     pub fn ratchet_decrypt(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
-        // --- Pre-computation & Sanity Checks ---
         if packet.header.decoy_flag != self.decoy_mode {
-            return Err(RatchetError::DecryptionError(
-                "Decoy flag mismatch".to_string(),
-            ));
+            return Err(RatchetError::DecryptionError("Decoy flag mismatch".to_string()));
         }
 
-        // --- Asymmetric Ratchet Step ---
         if let Some(new_remote_pk) = packet.header.dh_new_pub_key {
             self.perform_dh_ratchet(new_remote_pk)?;
         }
 
-        // --- Symmetric Ratchet Step ---
-        let receiving_ck = self.receiving_chain_key.as_mut().ok_or_else(|| {
-            RatchetError::StateError("Receiving chain not initialized".to_string())
-        })?;
-
-        // Try to decrypt with current state or by advancing the chain
-        let plaintext = self
-            .try_decrypt_and_advance(receiving_ck, packet)
-            .or_else(|_| {
-                // If that fails, attempt fractal recovery
-                self.try_fractal_recovery(packet)
+        let plaintext = {
+            let receiving_ck = self.receiving_chain_key.as_mut().ok_or_else(|| {
+                RatchetError::StateError("Receiving chain not initialized".to_string())
             })?;
+            self.try_decrypt_and_advance(receiving_ck, packet)
+        }.or_else(|_| self.try_fractal_recovery(packet))?;
 
-        // On successful decryption, store the new fractal bundle for future recovery
-        self.fractal_recovery_bundles
-            .push(packet.fractal_bundle.clone());
+        self.fractal_recovery_bundles.push(packet.fractal_bundle.clone());
         if self.fractal_recovery_bundles.len() > 5 {
             self.fractal_recovery_bundles.remove(0);
         }
-
         Ok(plaintext)
     }
 
@@ -246,24 +234,22 @@ impl MatryoshkaRatchet {
         self.sending_chain_key = Some(send_ck);
         self.receiving_chain_key = Some(recv_ck);
         self.dh_remote_public_key = new_remote_pk;
-        self.dh_key_pair = StaticSecret::random_from_rng(rand_core::OsRng);
+        self.dh_key_pair = StaticSecret::random_from_rng(OsRng);
 
         Ok(())
     }
 
     /// Attempts to recover the ratchet state using a key from a stored fractal bundle.
     fn try_fractal_recovery(&mut self, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
-        for bundle in self.fractal_recovery_bundles.iter().rev() {
+        let bundles = self.fractal_recovery_bundles.clone();
+        for bundle in bundles.iter().rev() {
             for classical_key in &bundle.classical {
-                // Treat the fractal key as a new root key and try to re-sync
                 let new_root_key = RootKey(*classical_key);
                 if let Ok((mut new_recv_ck, _)) = classical::kdf_root(&new_root_key, self.kdf_salt_suffix) {
-                    if self.try_decrypt_and_advance(&mut new_recv_ck, packet).is_ok() {
-                        // Recovery successful! Commit the new state.
+                    if let Ok(plaintext) = self.try_decrypt_and_advance(&mut new_recv_ck, packet) {
                         self.root_key = new_root_key;
                         self.receiving_chain_key = Some(new_recv_ck);
-                        // Other state variables (like sending chain) would also need to be reset.
-                        return self.try_decrypt_and_advance(&mut new_recv_ck, packet);
+                        return Ok(plaintext);
                     }
                 }
             }
