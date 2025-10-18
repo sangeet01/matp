@@ -7,10 +7,8 @@
 pub mod engine;
 pub mod strategies;
 pub mod cover_traffic;
-pub mod fast_ghost;
 
 pub use engine::GhostEngine;
-pub use fast_ghost::FastGhost;
 
 // Define a common, top-level error type for all steganography operations.
 #[derive(Debug, thiserror::Error)]
