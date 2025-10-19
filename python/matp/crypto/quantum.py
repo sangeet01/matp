@@ -168,7 +168,8 @@ class QuantumCrypto:
         try:
             import oqs
             kem = oqs.KeyEncapsulation("Kyber512")
-            # Fix: Use correct argument order for liboqs
+            # Fix: Import the secret key first, then decapsulate
+            kem.import_secret_key(secret_key)
             shared_secret = kem.decap_secret(ciphertext)
             return shared_secret
         except Exception as e:
@@ -262,6 +263,7 @@ class QuantumCrypto:
         try:
             import oqs
             sig = oqs.Signature("Dilithium2")
+            sig.import_secret_key(secret_key)
             signature = sig.sign(message)
             return signature
         except Exception as e:
