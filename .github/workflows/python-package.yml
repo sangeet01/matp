@@ -60,4 +60,7 @@ jobs:
 
     - name: Test with pytest
       run: |
+        # Point liboqs-python to the pre-built shared library to prevent it
+        # from trying to download and build a (now-defunct) version itself.
+        export OQS_LIB_DIR=/usr/local/lib
         cd python && pytest -v --tb=short
