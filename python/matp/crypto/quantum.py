@@ -167,11 +167,10 @@ class QuantumCrypto:
         """Real Kyber decapsulation"""
         try:
             import oqs
-            kem = oqs.KeyEncapsulation("Kyber512")
-            # Fix: Import the secret key first, then decapsulate
-            kem.import_secret_key(secret_key)
-            shared_secret = kem.decap_secret(ciphertext)
-            return shared_secret
+            # Create new KEM instance with the secret key
+            with oqs.KeyEncapsulation("Kyber512", secret_key=secret_key) as kem:
+                shared_secret = kem.decap_secret(ciphertext)
+                return shared_secret
         except Exception as e:
             print(f"[QUANTUM] PQ decapsulation failed: {e}, using fallback")
             return self._kem_decapsulate_fallback(secret_key, ciphertext)
@@ -262,10 +261,9 @@ class QuantumCrypto:
         """Real Dilithium signature"""
         try:
             import oqs
-            sig = oqs.Signature("Dilithium2")
-            sig.import_secret_key(secret_key)
-            signature = sig.sign(message)
-            return signature
+            with oqs.Signature("Dilithium2", secret_key=secret_key) as sig:
+                signature = sig.sign(message)
+                return signature
         except Exception as e:
             print(f"[QUANTUM] PQ signing failed: {e}, using fallback")
             return self._sign_fallback(secret_key, message)
@@ -299,8 +297,8 @@ class QuantumCrypto:
         """Real Dilithium verification"""
         try:
             import oqs
-            sig = oqs.Signature("Dilithium2")
-            return sig.verify(message, signature, public_key)
+            with oqs.Signature("Dilithium2") as sig:
+                return sig.verify(message, signature, public_key)
         except Exception as e:
             print(f"[QUANTUM] PQ verification failed: {e}, using fallback")
             return self._verify_fallback(public_key, message, signature)
