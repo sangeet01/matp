@@ -27,7 +27,12 @@ jobs:
     - name: Install system dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y liboqs-dev
+        sudo apt-get install -y cmake ninja-build
+        git clone --depth 1 https://github.com/open-quantum-safe/liboqs.git
+        cd liboqs && mkdir build && cd build
+        cmake -GNinja -DCMAKE_INSTALL_PREFIX=/usr/local ..
+        ninja && sudo ninja install
+        sudo ldconfig
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
