@@ -204,6 +204,11 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guid
 
 Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
+## Credits
+- Protocol design and Python implementation: Sangeet Sharma
+- Rust implementation: Assisted by Amazon Q
+
+
 ## 🔗 Links
 
 - **Documentation**: [docs/](docs/)
