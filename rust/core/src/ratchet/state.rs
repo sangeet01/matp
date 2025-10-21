@@ -15,7 +15,7 @@ pub type ZkpOfInnocence = zkp::InnocenceProof;
 
 /// The header attached to every encrypted message. It contains the necessary
 /// public information for the recipient to decrypt the message.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MessageHeader {
     /// The recipient's public key that this message is intended for.
     pub dh_ratchet_pub_key: X25519PublicKey,
@@ -32,7 +32,7 @@ pub struct MessageHeader {
 }
 
 /// The full, encrypted message packet.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MtpPacket {
     pub header: MessageHeader,
     /// The AEAD-encrypted ciphertext (nonce is prepended).

@@ -47,8 +47,8 @@ impl MatryoshkaSession {
         remote_dh_public_key: X25519PublicKey,
         is_initiator: bool,
     ) -> Result<Self, RatchetError> {
-        let real_ratchet = AdaptiveRatchet::new(initial_shared_secret, remote_dh_public_key, is_initiator, false)?;
-        let decoy_ratchet = AdaptiveRatchet::new(decoy_shared_secret, remote_dh_public_key, is_initiator, true)?;
+        let real_ratchet = AdaptiveRatchet::new(initial_shared_secret, remote_dh_public_key, is_initiator, false, None)?;
+        let decoy_ratchet = AdaptiveRatchet::new(decoy_shared_secret, remote_dh_public_key, is_initiator, true, None)?;
         
         // Generate session ID
         let mut session_id = [0u8; 16];

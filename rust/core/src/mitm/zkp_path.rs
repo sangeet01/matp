@@ -20,12 +20,22 @@ const MAX_CACHE_SIZE: usize = 10000;
 ///
 /// Proves knowledge of shared secret without revealing it.
 /// MITM cannot forge proofs without the master_secret.
-#[derive(Clone)]
 pub struct ZKPathProver {
     pub(crate) master_secret: Vec<u8>,
     proofs_verified: u64,
     proofs_failed: u64,
     point_cache: RwLock<HashMap<String, Vec<u8>>>,
+}
+
+impl Clone for ZKPathProver {
+    fn clone(&self) -> Self {
+        Self {
+            master_secret: self.master_secret.clone(),
+            proofs_verified: self.proofs_verified,
+            proofs_failed: self.proofs_failed,
+            point_cache: RwLock::new(HashMap::new()),
+        }
+    }
 }
 
 impl ZKPathProver {

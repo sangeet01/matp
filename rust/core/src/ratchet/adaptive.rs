@@ -147,11 +147,20 @@ impl QuantumRatchet {
             return Err(RatchetError::DecryptionError("Decoy flag mismatch".to_string()));
         }
         
-        let receiving_ck = self.receiving_chain_key.as_mut()
-            .ok_or_else(|| RatchetError::StateError("Receiving chain not initialized".to_string()))?;
+        if self.receiving_chain_key.is_none() {
+            return Err(RatchetError::StateError("Receiving chain not initialized".to_string()));
+        }
         
         // Try normal decryption
-        match self.try_decrypt_normal(receiving_ck, packet) {
+        let result = Self::try_decrypt_with_chain(
+            self.receiving_chain_key.as_mut().unwrap(),
+            &mut self.msg_num_recv,
+            &mut self.skipped_message_keys,
+            packet,
+            self.kdf_salt_suffix,
+        );
+        
+        match result {
             Ok(plaintext) => {
                 // Store fractal bundle
                 self.fractal_recovery_bundles.push(packet.fractal_bundle.clone());
@@ -164,33 +173,39 @@ impl QuantumRatchet {
         }
     }
     
-    fn try_decrypt_normal(&mut self, receiving_ck: &mut ChainKey, packet: &MtpPacket) -> Result<Vec<u8>, RatchetError> {
+    fn try_decrypt_with_chain(
+        receiving_ck: &mut ChainKey,
+        msg_num_recv: &mut u32,
+        skipped_message_keys: &mut HashMap<(Vec<u8>, u32), MessageKey>,
+        packet: &MtpPacket,
+        kdf_salt_suffix: &[u8],
+    ) -> Result<Vec<u8>, RatchetError> {
         let msg_num = packet.header.chain_msg_num;
         
         // Check skipped messages
         let key = (vec![0u8; 32], msg_num);
-        if let Some(message_key) = self.skipped_message_keys.remove(&key) {
+        if let Some(message_key) = skipped_message_keys.remove(&key) {
             return classical::decrypt(&message_key, &packet.ciphertext, &[])
                 .map_err(|e| RatchetError::Crypto(e));
         }
         
         // Advance chain to catch up
-        while self.msg_num_recv < msg_num {
-            if self.skipped_message_keys.len() >= 100 {
+        while *msg_num_recv < msg_num {
+            if skipped_message_keys.len() >= 100 {
                 return Err(RatchetError::StateError("Max skipped messages exceeded".to_string()));
             }
-            let (skipped_mk, next_ck) = classical::kdf_chain(receiving_ck, self.kdf_salt_suffix)?;
-            self.skipped_message_keys.insert((vec![0u8; 32], self.msg_num_recv), skipped_mk);
+            let (skipped_mk, next_ck) = classical::kdf_chain(receiving_ck, kdf_salt_suffix)?;
+            skipped_message_keys.insert((vec![0u8; 32], *msg_num_recv), skipped_mk);
             *receiving_ck = next_ck;
-            self.msg_num_recv += 1;
+            *msg_num_recv += 1;
         }
         
         // Decrypt current message
-        if self.msg_num_recv == msg_num {
-            let (message_key, next_ck) = classical::kdf_chain(receiving_ck, self.kdf_salt_suffix)?;
+        if *msg_num_recv == msg_num {
+            let (message_key, next_ck) = classical::kdf_chain(receiving_ck, kdf_salt_suffix)?;
             let plaintext = classical::decrypt(&message_key, &packet.ciphertext, &[])?;
             *receiving_ck = next_ck;
-            self.msg_num_recv += 1;
+            *msg_num_recv += 1;
             return Ok(plaintext);
         }
         
@@ -215,11 +230,18 @@ impl QuantumRatchet {
         }
         
         // ZKP verified - try fractal recovery
-        for bundle in self.fractal_recovery_bundles.iter().rev() {
+        let bundles = self.fractal_recovery_bundles.clone();
+        for bundle in bundles.iter().rev() {
             for classical_key in &bundle.classical {
                 let new_root_key = RootKey(*classical_key);
                 if let Ok((mut new_recv_ck, _)) = classical::kdf_root(&new_root_key, self.kdf_salt_suffix) {
-                    if let Ok(plaintext) = self.try_decrypt_normal(&mut new_recv_ck, packet) {
+                    if let Ok(plaintext) = Self::try_decrypt_with_chain(
+                        &mut new_recv_ck,
+                        &mut self.msg_num_recv,
+                        &mut self.skipped_message_keys,
+                        packet,
+                        self.kdf_salt_suffix,
+                    ) {
                         self.root_key = new_root_key;
                         self.receiving_chain_key = Some(new_recv_ck);
                         return Ok(plaintext);
@@ -232,10 +254,9 @@ impl QuantumRatchet {
     
     /// Generate Schnorr ZKP proof for session recovery
     fn generate_recovery_zkp(&self) -> Option<ZkpRecoveryProof> {
-        use k256::{
-            elliptic_curve::ScalarPrimitive,
-            ProjectivePoint, Scalar, FieldBytes,
-        };
+        use k256::elliptic_curve::ScalarPrimitive;
+        use k256::elliptic_curve::sec1::ToEncodedPoint;
+        use k256::{ProjectivePoint, Scalar, FieldBytes};
         use rand::RngCore;
         
         let mut hasher = Sha256::new();
@@ -253,12 +274,12 @@ impl QuantumRatchet {
         hasher.update(conn_id.as_bytes());
         let x_bytes = hasher.finalize();
         let fb = FieldBytes::from(x_bytes);
-        let x_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let x_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         
         let mut k_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut k_bytes);
         let fb = FieldBytes::from(k_bytes);
-        let k_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let k_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         let r_point = ProjectivePoint::GENERATOR * k_scalar;
         let r_affine = r_point.to_affine();
         let r_bytes = r_affine.to_encoded_point(false);
@@ -266,7 +287,7 @@ impl QuantumRatchet {
         let mut c_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut c_bytes);
         let fb = FieldBytes::from(c_bytes);
-        let c_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let c_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         
         let s_scalar = k_scalar + (c_scalar * x_scalar);
         let s_bytes = s_scalar.to_bytes();
@@ -281,19 +302,18 @@ impl QuantumRatchet {
     
     /// Verify Schnorr ZKP proof for session recovery
     fn verify_recovery_zkp(zkp_prover: &ZKPathProver, proof: &ZkpRecoveryProof) -> bool {
-        use k256::{
-            elliptic_curve::ScalarPrimitive,
-            ProjectivePoint, Scalar, FieldBytes, AffinePoint,
-        };
+        use k256::elliptic_curve::ScalarPrimitive;
+        use k256::elliptic_curve::sec1::FromEncodedPoint;
+        use k256::{ProjectivePoint, Scalar, FieldBytes, AffinePoint};
         
         let mut hasher = Sha256::new();
         hasher.update(&zkp_prover.master_secret);
         hasher.update(proof.conn_id.as_bytes());
         let x_bytes = hasher.finalize();
         let fb = FieldBytes::from(x_bytes);
-        let x_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let x_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         let y_point = ProjectivePoint::GENERATOR * x_scalar;
         
@@ -302,9 +322,9 @@ impl QuantumRatchet {
             Err(_) => return false,
         };
         let fb = FieldBytes::from(s_bytes);
-        let s_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let s_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         
         let c_bytes: [u8; 32] = match proof.c.as_slice().try_into() {
@@ -312,9 +332,9 @@ impl QuantumRatchet {
             Err(_) => return false,
         };
         let fb = FieldBytes::from(c_bytes);
-        let c_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let c_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         
         let mut r_full = vec![0x04u8];
@@ -323,7 +343,7 @@ impl QuantumRatchet {
             Ok(ep) => ep,
             Err(_) => return false,
         };
-        let r_point = match AffinePoint::from_encoded_point(&encoded_point) {
+        let r_point = match AffinePoint::from_encoded_point(&encoded_point).into_option() {
             Some(p) => ProjectivePoint::from(p),
             None => return false,
         };
@@ -379,7 +399,7 @@ impl AdaptiveRatchet {
             };
             
             // Initialize quantum ratchet with ZKP prover
-            let zkp_prover = self.classical_ratchet.zkp_prover.clone();
+            let zkp_prover = self.classical_ratchet.get_zkp_prover().clone();
             match QuantumRatchet::new(&quantum_root_bytes, None, true, false, zkp_prover) {
                 Ok(qr) => self.quantum_ratchet = Some(qr),
                 Err(e) => println!("[ADAPTIVE] Failed to initialize quantum ratchet: {:?}", e),

@@ -338,6 +338,11 @@ impl MatryoshkaRatchet {
         self.root_key.0
     }
     
+    /// Get ZKP prover reference
+    pub(crate) fn get_zkp_prover(&self) -> &Option<ZKPathProver> {
+        &self.zkp_prover
+    }
+    
     /// 🔐 CRITICAL: ZKP-protected session recovery
     /// 
     /// This is the key security improvement over Signal:
@@ -407,13 +412,13 @@ impl MatryoshkaRatchet {
         hasher.update(conn_id.as_bytes());
         let x_bytes = hasher.finalize();
         let fb = FieldBytes::from(x_bytes);
-        let x_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let x_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         
         // Generate random nonce k and commitment R = k*G
         let mut k_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut k_bytes);
         let fb = FieldBytes::from(k_bytes);
-        let k_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let k_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         let r_point = ProjectivePoint::GENERATOR * k_scalar;
         let r_affine = r_point.to_affine();
         let r_bytes = r_affine.to_encoded_point(false);
@@ -422,7 +427,7 @@ impl MatryoshkaRatchet {
         let mut c_bytes = [0u8; 32];
         rand::thread_rng().fill_bytes(&mut c_bytes);
         let fb = FieldBytes::from(c_bytes);
-        let c_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).ok()?);
+        let c_scalar = Scalar::from(ScalarPrimitive::from_bytes(&fb).into_option()?);
         
         // Compute response s = k + c*x (mod N)
         let s_scalar = k_scalar + (c_scalar * x_scalar);
@@ -439,7 +444,7 @@ impl MatryoshkaRatchet {
     /// Verify Schnorr ZKP proof for session recovery
     fn verify_recovery_zkp(zkp_prover: &ZKPathProver, proof: &ZkpRecoveryProof) -> bool {
         use k256::{
-            elliptic_curve::ScalarPrimitive,
+            elliptic_curve::{ScalarPrimitive, sec1::FromEncodedPoint},
             ProjectivePoint, Scalar, FieldBytes, AffinePoint,
         };
         
@@ -449,9 +454,9 @@ impl MatryoshkaRatchet {
         hasher.update(proof.conn_id.as_bytes());
         let x_bytes = hasher.finalize();
         let fb = FieldBytes::from(x_bytes);
-        let x_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let x_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         let y_point = ProjectivePoint::GENERATOR * x_scalar;
         
@@ -461,9 +466,9 @@ impl MatryoshkaRatchet {
             Err(_) => return false,
         };
         let fb = FieldBytes::from(s_bytes);
-        let s_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let s_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         
         let c_bytes: [u8; 32] = match proof.c.as_slice().try_into() {
@@ -471,9 +476,9 @@ impl MatryoshkaRatchet {
             Err(_) => return false,
         };
         let fb = FieldBytes::from(c_bytes);
-        let c_scalar = match ScalarPrimitive::from_bytes(&fb) {
-            Ok(s) => Scalar::from(s),
-            Err(_) => return false,
+        let c_scalar = match ScalarPrimitive::from_bytes(&fb).into_option() {
+            Some(s) => Scalar::from(s),
+            None => return false,
         };
         
         // Parse R point (uncompressed format without 0x04 prefix)
@@ -483,7 +488,7 @@ impl MatryoshkaRatchet {
             Ok(ep) => ep,
             Err(_) => return false,
         };
-        let r_point = match AffinePoint::from_encoded_point(&encoded_point) {
+        let r_point = match AffinePoint::from_encoded_point(&encoded_point).into_option() {
             Some(p) => ProjectivePoint::from(p),
             None => return false,
         };

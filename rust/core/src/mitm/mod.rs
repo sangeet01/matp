@@ -13,7 +13,7 @@
 
 mod bloom_filter;
 mod flow_fingerprint;
-mod zkp_path;
+pub mod zkp_path;
 mod predictive_crypto;
 mod connection_pool;
 mod stochastic_auth;
@@ -21,7 +21,7 @@ mod lightning;
 
 pub use bloom_filter::{BloomFilterAuth, CertificateInfo};
 pub use flow_fingerprint::{FlowFingerprinter, FlowMetrics, FlowFingerprint, Direction};
-pub use zkp_path::ZKPathProver;
+pub use zkp_path::{ZKPathProver, ZKPathStats};
 pub use predictive_crypto::{PredictiveCrypto, TimeSlot};
 pub use connection_pool::{PreAuthConnectionPool, SecureConnection};
 pub use stochastic_auth::ContinuousStochasticAuth;

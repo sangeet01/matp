@@ -1,7 +1,7 @@
 use mtp_core::protocol::MatryoshkaProtocol;
 use mtp_core::ghost::CompleteGhostMode;
 use mtp_core::groups::MatryoshkaGroupManager;
-use mtp_core::zkp::engine::InnocenceProofZKP;
+use mtp_core::zkp::{engine::InnocenceProofZKP, TrafficPattern};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Matryoshka Complete Demo ===");
@@ -46,10 +46,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 4. Zero-Knowledge Proofs
     println!("4. ZERO-KNOWLEDGE PROOFS");
     let zkp = InnocenceProofZKP::new();
-    let traffic = serde_json::json!({"data": "normal_traffic"});
+    let traffic = TrafficPattern {
+        request_sizes: vec![1024, 2048],
+        timing_intervals: vec![200, 150],
+        content_types: vec!["application/json".to_string()],
+    };
     let proof = zkp.generate_proof(&traffic)?;
     let valid = zkp.verify_proof(&proof, &traffic);
-    println!("✓ Innocence proof: {} bytes", proof.proof_type.len());
+    println!("✓ Innocence proof generated");
     println!("✓ Verification: {}\n", if valid { "VALID" } else { "INVALID" });
 
     // 5. Statistics
