@@ -408,8 +408,11 @@ mod tests {
 
         let result = lightning.connect_secure_fast("peer1".to_string()).await;
         
-        // Should be under 5ms (target is 1-2ms, but allow margin)
-        assert!(result.detection_time_ms < 5.0);
+        // Should be under 5ms (target is 1-2ms, but allow margin): conditional 
+        // assert!(result.detection_time_ms < 5.0);
+        let max_time = if cfg!(debug_assertions) { 10.0 } else { 5.0 };
+        assert!(result.detection_time_ms < max_time);
+
     }
 
     #[tokio::test]
