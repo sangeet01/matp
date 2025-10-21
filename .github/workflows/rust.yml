@@ -13,6 +13,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
   build_and_test:
@@ -22,48 +23,75 @@ jobs:
       run:
         working-directory: rust/core
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Check if Cargo.toml exists
-        id: check-cargo
-        run: |
-          if [ -f "Cargo.toml" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Cache cargo registry
-        if: steps.check-cargo.outputs.exists == 'true'
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            rust/core/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/core/Cargo.lock') }}
+      - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        if: steps.check-cargo.outputs.exists == 'true'
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
           components: rustfmt, clippy
 
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            rust/core/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/core/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
       - name: Check formatting
-        if: steps.check-cargo.outputs.exists == 'true'
         run: cargo fmt --all -- --check
         continue-on-error: true
 
       - name: Run Clippy
-        if: steps.check-cargo.outputs.exists == 'true'
-        run: cargo clippy -- -D warnings
+        run: cargo clippy --all-targets --all-features -- -D warnings
         continue-on-error: true
 
       - name: Build
-        if: steps.check-cargo.outputs.exists == 'true'
-        run: cargo build --verbose
+        run: cargo build --verbose --all-features
 
       - name: Run tests
-        if: steps.check-cargo.outputs.exists == 'true'
-        run: cargo test --verbose
+        run: cargo test --verbose --all-features
+
+      - name: Run integration tests
+        run: cargo test --test '*' --verbose
+        working-directory: ../../tests
+        continue-on-error: true
+
+      - name: Build examples
+        run: |
+          cargo build --example demo_complete
+          cargo build --example demo_basic
+          cargo build --example demo_ghost
+          cargo build --example demo_groups
+          cargo build --example demo_mitm
+          cargo build --example demo_quantum
+          cargo build --example demo_zkp
+          cargo build --example fast_ghost_demo
+
+      - name: Run doc tests
+        run: cargo test --doc
+        continue-on-error: true
+
+      - name: Run benchmarks (check only)
+        run: cargo test --release --all-features -- --nocapture
+        continue-on-error: true
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust/core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+      - name: Run security audit
+        run: cargo audit
+        continue-on-error: true
