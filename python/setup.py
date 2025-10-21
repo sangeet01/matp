@@ -25,7 +25,7 @@ setup(
     python_requires=">=3.9",
     install_requires=[
         "cryptography>=41.0.0",
-        "liboqs-python>=0.14.0",
+        "liboqs-python==0.10.0",
     ],
     keywords="cryptography steganography encryption messaging security invisible matp",
 )
