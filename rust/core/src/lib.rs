@@ -12,6 +12,9 @@ pub mod ghost;
 pub mod dht;
 pub mod zkp;
 pub mod session;
+pub mod groups;
+pub mod protocol;
+pub mod mitm;
 
 // --- Public API ---
 // Re-export the most important structs and functions to create a clean public API.
@@ -23,6 +26,22 @@ pub use session::MatryoshkaSession;
 
 // The steganography engine.
 pub use ghost::engine::GhostEngine;
+
+// Group messaging
+pub use groups::{FractalGroupRatchet, MatryoshkaGroup, MatryoshkaGroupManager};
+
+// High-level protocol wrapper
+pub use protocol::{MatryoshkaProtocol, GhostMessage, FutureBundle};
+
+// MAP (Matryoshka Authentication Protocol) - Lightning MITM Protection
+pub use mitm::{
+    BloomFilterAuth, CertificateInfo, FlowFingerprinter, FlowMetrics, 
+    FlowFingerprint, ZKPathProver, PredictiveCrypto, PreAuthConnectionPool,
+    SecureConnection, ContinuousStochasticAuth, LightningMITMProtection, MITMDetectionResult
+};
+
+// Quantum cryptography
+pub use crypto::quantum;
 
 // A top-level error type for the library.
 // Each module will have its own error type that can be converted into this one.

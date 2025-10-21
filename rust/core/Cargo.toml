@@ -11,6 +11,9 @@ name = "mtp_core"
 path = "src/lib.rs"
 
 [dependencies]
+# Big integers for ZKP
+lazy_static = "1.4"
+
 # Classical Cryptography
 rand_core = "0.6.4"
 x25519-dalek = { version = "2.0.1", features = ["serde", "static_secrets"] }
@@ -26,8 +29,8 @@ serde = { version = "1.0", features = ["derive"] }
 rmp-serde = "1.1" # MessagePack for compact serialization
 base64 = "0.21.7"
 
-# Asynchronous Operations (for DHT)
-tokio = { version = "1.35.1", features = ["sync", "rt-multi-thread", "macros"] }
+# Asynchronous Operations (for DHT and MAP)
+tokio = { version = "1.35.1", features = ["sync", "rt-multi-thread", "macros", "time"] }
 
 # Steganography Dependencies
 image = "0.24.7"
@@ -39,3 +42,6 @@ thiserror = "1.0"
 uint = "0.9"
 rand = "0.8.5"
 rand_chacha = "0.3"
+flate2 = "1.0"
+hex = "0.4"
+k256 = { version = "0.13.4", features = ["ecdsa", "serde"] }

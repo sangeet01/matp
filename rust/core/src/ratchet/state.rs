@@ -7,10 +7,11 @@ use x25519_dalek::PublicKey as X25519PublicKey;
 use serde::{Serialize, Deserialize};
 
 use crate::crypto::fractal::PQFractalBundle;
-use crate::zkp::InnocenceProof;
+use crate::zkp;
+use crate::ratchet::rclassical::ZkpRecoveryProof;
 
 // Type alias for clarity
-pub type ZkpOfInnocence = InnocenceProof;
+pub type ZkpOfInnocence = zkp::InnocenceProof;
 
 /// The header attached to every encrypted message. It contains the necessary
 /// public information for the recipient to decrypt the message.
@@ -38,4 +39,7 @@ pub struct MtpPacket {
     pub ciphertext: Vec<u8>,
     /// The PQ-Optimized Fractal Bundle for future recovery.
     pub fractal_bundle: PQFractalBundle,
+    /// Optional ZKP proof for session recovery (MITM protection)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub zkp_recovery_proof: Option<ZkpRecoveryProof>,
 }

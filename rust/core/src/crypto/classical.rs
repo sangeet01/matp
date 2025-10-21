@@ -63,7 +63,10 @@ pub fn encrypt(
         .map_err(|_| CryptoError::EncryptionError)?;
 
     // Prepend the nonce to the ciphertext for storage/transmission
-    Ok([nonce.as_slice(), ciphertext.as_slice()].concat())
+    let mut result = Vec::with_capacity(nonce.len() + ciphertext.len());
+    result.extend_from_slice(&nonce);
+    result.extend_from_slice(&ciphertext);
+    Ok(result)
 }
 
 /// Decrypts a ciphertext using AES-256-GCM.
@@ -74,9 +77,11 @@ pub fn decrypt(
 ) -> Result<Vec<u8>, CryptoError> {
     let cipher = Aes256Gcm::new_from_slice(&key.0).unwrap();
     let (nonce_bytes, ciphertext) = ciphertext_with_nonce.split_at(12);
-    let nonce = Nonce::from_slice(nonce_bytes);
+    let nonce_array: [u8; 12] = nonce_bytes.try_into()
+        .map_err(|_| CryptoError::DecryptionError)?;
+    let nonce = Nonce::from(nonce_array);
 
     cipher
-        .decrypt(nonce, ciphertext)
+        .decrypt(&nonce, ciphertext)
         .map_err(|_| CryptoError::DecryptionError)
 }

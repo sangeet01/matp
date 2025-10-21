@@ -37,12 +37,12 @@ impl FastGhost {
     pub fn send(&self, message: &[u8]) -> Result<Value, GhostError> {
         // Generate nonce
         let nonce_bytes = rand::random::<[u8; 12]>();
-        let nonce = Nonce::from_slice(&nonce_bytes);
+        let nonce = Nonce::from(nonce_bytes);
 
         // Encrypt
         let ciphertext = self
             .cipher
-            .encrypt(nonce, message)
+            .encrypt(&nonce, message)
             .map_err(|e| GhostError::EmbeddingError(e.to_string()))?;
 
         // Combine nonce + ciphertext
@@ -111,12 +111,13 @@ impl FastGhost {
             return Err(GhostError::ExtractionError("Invalid payload".to_string()));
         }
         let (nonce_bytes, ciphertext) = encrypted.split_at(12);
-        let nonce = Nonce::from_slice(nonce_bytes);
+        let nonce_array: [u8; 12] = nonce_bytes.try_into().map_err(|_| GhostError::ExtractionError("Invalid nonce length".to_string()))?;
+        let nonce = Nonce::from(nonce_array);
 
         // Decrypt
         let plaintext = self
             .cipher
-            .decrypt(nonce, ciphertext)
+            .decrypt(&nonce, ciphertext)
             .map_err(|e| GhostError::ExtractionError(e.to_string()))?;
 
         Ok(plaintext)
