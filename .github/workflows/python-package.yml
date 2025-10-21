@@ -44,6 +44,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-asyncio pytest-cov
         python -m pip install cryptography>=41.0.0
+        python -m pip install coincurve>=18.0.0
         # Install liboqs-python after liboqs is built
         python -m pip install liboqs-python>=0.10.0
 
@@ -59,7 +60,7 @@ jobs:
         OQS_INSTALL_PATH: /usr/local
         LD_LIBRARY_PATH: /usr/local/lib:$LD_LIBRARY_PATH
       run: |
-        cd python && pytest -v --tb=short --cov=matp --cov-report=term-missing
+        cd python && pytest tests/ -v --tb=short --cov=matp --cov-report=term-missing
 
     - name: Upload coverage reports
       if: matrix.python-version == '3.11'
