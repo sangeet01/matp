@@ -9,11 +9,14 @@ from __future__ import annotations
 import time
 import secrets
 from enum import Enum
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, TYPE_CHECKING
 from dataclasses import dataclass, field
 
 from ..crypto.quantum import get_quantum_crypto, KemKeyPair
 from ..crypto.fractal import PQFractalBundle, FractalBundleGenerator
+
+if TYPE_CHECKING:
+    from ..mitm.zkp_path import ZKPathProver
 
 
 class QuantumTrigger(Enum):
@@ -23,6 +26,11 @@ class QuantumTrigger(Enum):
     NETWORK_ANOMALY = "network_anomaly"  # Suspicious network activity
     TIME_BASED = "time_based"            # Periodic quantum refresh
     COMPROMISE_DETECTED = "compromise"   # Potential compromise detected
+
+
+class MitmDetectedError(Exception):
+    """MITM attack detected during session recovery"""
+    pass
 
 
 @dataclass
@@ -52,7 +60,8 @@ class AdaptiveRatchet:
         initial_shared_secret: bytes,
         is_initiator: bool = True,
         quantum_threshold: int = 1000,  # Messages before auto-quantum
-        enable_auto_quantum: bool = False
+        enable_auto_quantum: bool = False,
+        zkp_prover: Optional["ZKPathProver"] = None  # ZKP for session recovery
     ):
         """
         Initialize adaptive ratchet.
@@ -98,12 +107,21 @@ class AdaptiveRatchet:
         # Quantum crypto
         self.qc = get_quantum_crypto()
         
+        # ZKP prover for session recovery
+        self.zkp_prover = zkp_prover
+        
+        # Fractal recovery bundles (last 5)
+        self.fractal_recovery_bundles: List[PQFractalBundle] = []
+        
         # Statistics
         self.stats = {
             "messages_sent": 0,
             "messages_received": 0,
             "quantum_triggers": 0,
-            "anomalies_detected": 0
+            "anomalies_detected": 0,
+            "recoveries_attempted": 0,
+            "recoveries_successful": 0,
+            "mitm_detected": 0
         }
     
     @staticmethod
@@ -167,15 +185,23 @@ class AdaptiveRatchet:
             self.classical_state.chain_key_send
         )
         
+        # Generate ZKP proof if prover available
+        zkp_proof = self._generate_recovery_zkp() if self.zkp_prover else None
+        
         self.classical_state.message_number += 1
         
-        return {
+        packet = {
             "ciphertext": ciphertext,
             "nonce": nonce,
             "mode": "classical",
             "message_number": self.classical_state.message_number - 1,
             "fractal_bundle": bundle
         }
+        
+        if zkp_proof:
+            packet["zkp_proof"] = zkp_proof
+        
+        return packet
     
     def _encrypt_quantum(self, plaintext: bytes) -> Dict[str, Any]:
         """Encrypt using quantum ratchet"""
@@ -206,15 +232,23 @@ class AdaptiveRatchet:
             self.quantum_state.chain_key_send
         )
         
+        # Generate ZKP proof if prover available
+        zkp_proof = self._generate_recovery_zkp() if self.zkp_prover else None
+        
         self.quantum_state.message_number += 1
         
-        return {
+        packet = {
             "ciphertext": ciphertext,
             "nonce": nonce,
             "mode": "quantum",
             "message_number": self.quantum_state.message_number - 1,
             "fractal_bundle": bundle
         }
+        
+        if zkp_proof:
+            packet["zkp_proof"] = zkp_proof
+        
+        return packet
     
     def decrypt(self, packet: Dict[str, Any]) -> bytes:
         """
@@ -228,13 +262,24 @@ class AdaptiveRatchet:
         """
         mode = packet.get("mode", "classical")
         
-        if mode == "quantum":
-            plaintext = self._decrypt_quantum(packet)
-        else:
-            plaintext = self._decrypt_classical(packet)
-        
-        self.stats["messages_received"] += 1
-        return plaintext
+        try:
+            # Try normal decryption
+            if mode == "quantum":
+                plaintext = self._decrypt_quantum(packet)
+            else:
+                plaintext = self._decrypt_classical(packet)
+            
+            # Store fractal bundle for future recovery
+            if "fractal_bundle" in packet:
+                self.fractal_recovery_bundles.append(packet["fractal_bundle"])
+                if len(self.fractal_recovery_bundles) > 5:
+                    self.fractal_recovery_bundles.pop(0)
+            
+            self.stats["messages_received"] += 1
+            return plaintext
+        except Exception:
+            # Normal decryption failed - try fractal recovery with ZKP
+            return self._try_fractal_recovery_with_zkp(packet)
     
     def _decrypt_classical(self, packet: Dict[str, Any]) -> bytes:
         """Decrypt using classical ratchet"""
@@ -362,13 +407,174 @@ class AdaptiveRatchet:
         if not self.is_quantum_mode:
             self.trigger_quantum_mode(QuantumTrigger.PEER_REQUEST)
     
+    def _try_fractal_recovery_with_zkp(self, packet: Dict[str, Any]) -> bytes:
+        """
+        🔐 CRITICAL: ZKP-protected session recovery
+        
+        This is the key security improvement over Signal:
+        - Signal: Delete session + full re-handshake
+        - Matryoshka: Self-heal with cryptographic proof
+        
+        Args:
+            packet: Encrypted packet with metadata
+            
+        Returns:
+            Decrypted plaintext
+            
+        Raises:
+            MitmDetectedError: If ZKP verification fails (MITM detected)
+            RuntimeError: If recovery fails
+        """
+        self.stats["recoveries_attempted"] += 1
+        
+        # 🚨 CRITICAL: Verify ZKP proof BEFORE accepting recovery bundle
+        if "zkp_proof" in packet and self.zkp_prover:
+            if not self._verify_recovery_zkp(packet["zkp_proof"]):
+                self.stats["mitm_detected"] += 1
+                raise MitmDetectedError(
+                    "ZKP verification failed during session recovery - MITM attack detected!"
+                )
+        elif self.zkp_prover and "zkp_proof" not in packet:
+            # ZKP prover available but no proof in packet - suspicious
+            self.stats["mitm_detected"] += 1
+            raise MitmDetectedError(
+                "Missing ZKP proof during session recovery - possible MITM attack!"
+            )
+        
+        # ZKP verified (or not required) - try fractal recovery
+        mode = packet.get("mode", "classical")
+        state = self.quantum_state if mode == "quantum" else self.classical_state
+        
+        for bundle in reversed(self.fractal_recovery_bundles):
+            for classical_key in bundle.classical:
+                try:
+                    # Try to use this recovery key
+                    old_recv_key = state.chain_key_recv
+                    state.chain_key_recv = classical_key
+                    
+                    try:
+                        # Try to decrypt with recovered state
+                        if mode == "quantum":
+                            plaintext = self._decrypt_quantum(packet)
+                        else:
+                            plaintext = self._decrypt_classical(packet)
+                        
+                        # Success!
+                        self.stats["recoveries_successful"] += 1
+                        return plaintext
+                    except Exception:
+                        # This key didn't work, restore old state
+                        state.chain_key_recv = old_recv_key
+                        continue
+                except Exception:
+                    continue
+        
+        raise RuntimeError("Fractal recovery failed - no valid recovery key found")
+    
+    def _generate_recovery_zkp(self) -> Dict:
+        """
+        Generate Schnorr ZKP proof for session recovery.
+        
+        Returns:
+            Dict with proof components: R, s, c, conn_id
+        """
+        if not self.zkp_prover:
+            return {}
+        
+        try:
+            from coincurve import PrivateKey
+            import hashlib
+            
+            # Use a deterministic conn_id based on session state
+            conn_id = hashlib.sha256(self.classical_state.root_key).hexdigest()[:16]
+            
+            # Get secret x and public point Y = x*G
+            x_bytes, y_bytes = self.zkp_prover._get_public_point(conn_id)
+            x = int.from_bytes(x_bytes, 'big')
+            
+            # secp256k1 order
+            N = int.from_bytes(bytes([
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFE,
+                0xBA, 0xAE, 0xDC, 0xE6, 0xAF, 0x48, 0xA0, 0x3B, 0xBF, 0xD2, 0x5E, 0x8C, 0xD0, 0x36, 0x41, 0x41,
+            ]), 'big')
+            
+            # Generate random nonce k and commitment R = k*G
+            k = int.from_bytes(secrets.token_bytes(32), 'big') % N
+            k_bytes = k.to_bytes(32, 'big')
+            R = PrivateKey(k_bytes).public_key.format(compressed=False)[1:]
+            
+            # Generate challenge c
+            c = int.from_bytes(secrets.token_bytes(32), 'big') % N
+            c_bytes = c.to_bytes(32, 'big')
+            
+            # Compute response s = k + c*x (mod N)
+            s = (k + c * x) % N
+            s_bytes = s.to_bytes(32, 'big')
+            
+            return {
+                'R': R,
+                's': s_bytes,
+                'c': c_bytes,
+                'conn_id': conn_id
+            }
+        except Exception as e:
+            print(f"[ZKP] Proof generation failed: {e}")
+            return {}
+    
+    def _verify_recovery_zkp(self, zkp_proof: Dict) -> bool:
+        """
+        Verify ZKP proof for session recovery using Schnorr verification.
+        
+        Args:
+            zkp_proof: ZKP proof data with 'R', 's', 'c', 'conn_id'
+            
+        Returns:
+            True if proof is valid, False otherwise
+        """
+        if not self.zkp_prover:
+            return True  # No ZKP prover available, skip verification
+        
+        try:
+            from coincurve import PrivateKey, PublicKey
+            
+            # Extract proof components
+            R = zkp_proof['R']  # Commitment (64 bytes)
+            s_bytes = zkp_proof['s']  # Response (32 bytes)
+            c_bytes = zkp_proof['c']  # Challenge (32 bytes)
+            conn_id = zkp_proof['conn_id']  # Connection ID
+            
+            # Get public point Y = x*G for this connection
+            x_bytes, y_bytes = self.zkp_prover._get_public_point(conn_id)
+            
+            # Verify Schnorr equation: s*G == R + c*Y
+            sG = PrivateKey(s_bytes).public_key.format(compressed=False)[1:]
+            
+            # Compute c*Y
+            Y_pubkey = PublicKey(b'\x04' + y_bytes)
+            cY_point = Y_pubkey.multiply(c_bytes)
+            cY = cY_point.format(compressed=False)[1:]
+            
+            # Compute R + c*Y
+            R_pubkey = PublicKey(b'\x04' + R)
+            cY_pubkey = PublicKey(b'\x04' + cY)
+            R_plus_cY = R_pubkey.combine([cY_pubkey])
+            R_plus_cY_bytes = R_plus_cY.format(compressed=False)[1:]
+            
+            # Verify equation
+            return sG == R_plus_cY_bytes
+        except Exception as e:
+            print(f"[ZKP] Verification failed: {e}")
+            return False
+    
     def get_stats(self) -> Dict[str, Any]:
         """Get ratchet statistics"""
         return {
             **self.stats,
             "is_quantum_mode": self.is_quantum_mode,
             "anomaly_score": self.anomaly_score,
-            "current_mode": "quantum" if self.is_quantum_mode else "classical"
+            "current_mode": "quantum" if self.is_quantum_mode else "classical",
+            "has_zkp_protection": self.zkp_prover is not None,
+            "recovery_bundles": len(self.fractal_recovery_bundles)
         }
 
 

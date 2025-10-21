@@ -7,9 +7,10 @@ Production-grade implementation with:
 - Ghost steganography
 - Fractal Group Ratchet
 - Zero-knowledge proofs
+- Lightning MITM Protection (~1ms overhead)
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 __author__ = "Sangeet Sharma"
 
 from .protocol import MatryoshkaProtocol, GhostMessage
@@ -21,6 +22,15 @@ from .ghost.fast_ghost import FastGhostMode
 from .groups.fractal_ratchet import FractalGroupRatchet
 from .groups.manager import MatryoshkaGroup, MatryoshkaGroupManager
 from .zkp.sigma import SigmaProtocol, InnocenceProofZKP, generate_innocence_proof, verify_innocence_proof
+from .mitm import (
+    LightningMITMProtection,
+    MITMDetectionResult,
+    BloomFilterAuth,
+    FlowFingerprinter,
+    PredictiveCrypto,
+    PreAuthConnectionPool,
+    ContinuousStochasticAuth,
+)
 
 __all__ = [
     "MatryoshkaProtocol",
@@ -41,4 +51,11 @@ __all__ = [
     "InnocenceProofZKP",
     "generate_innocence_proof",
     "verify_innocence_proof",
+    "LightningMITMProtection",
+    "MITMDetectionResult",
+    "BloomFilterAuth",
+    "FlowFingerprinter",
+    "PredictiveCrypto",
+    "PreAuthConnectionPool",
+    "ContinuousStochasticAuth",
 ]

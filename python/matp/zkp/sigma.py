@@ -278,3 +278,4 @@ def verify_innocence_proof(proof_data: dict, cover_data: dict) -> bool:
     """Verify zero-knowledge innocence proof."""
     zkp = get_zkp()
     return zkp.verify_proof(proof_data, cover_data)
+
