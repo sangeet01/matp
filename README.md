@@ -7,7 +7,7 @@
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-quantum%20resistant-red.svg)](docs/security.md)
-[![Tests](https://img.shields.io/badge/tests-55%2F55%20passing-brightgreen.svg)](https://github.com/yourusername/matryoshka)
+[![Tests](https://img.shields.io/badge/tests-55%2F55%20passing-brightgreen.svg)](https://github.com/sangeet01/matp)
 
 ## 🎯 Shannon's Trident Achieved
 
@@ -28,7 +28,6 @@ The Matryoshka Protocol is the first implementation to simultaneously achieve al
 
 ### 🪆 **Fractal Group Ratchet** - O(1) Group Encryption
 - **Novel algorithm**: O(1) decryption complexity regardless of group size
-- Signal/WhatsApp: O(n) pairwise encryption scales linearly
 - Matryoshka: Single decrypt operation for any group size
 - **50,000 messages/sec throughput** with forward secrecy
 
@@ -36,7 +35,6 @@ The Matryoshka Protocol is the first implementation to simultaneously achieve al
 - Schnorr-based zero-knowledge proofs on secp256k1
 - Automatic recovery from message loss, network failures, device compromise
 - **Heals within 3 message exchanges** with cryptographic MITM detection
-- Signal's approach: Delete session + full re-handshake (nuclear option)
 
 ### ⚛️ **Post-Quantum Ready** - Future-Proof Defense
 - Hybrid cryptography: X25519 + Kyber-1024 KEM
@@ -253,12 +251,12 @@ cargo run --example demo_complete
 └─────────────────────────────────────────────────────┘
                          │
 ┌─────────────────────────────────────────────────────┐
-│            Double Ratchet Core (Signal)             │
+│            Double Ratchet Core                      │
 │  X3DH Handshake | ChaCha20-Poly1305 | HKDF          │
 └─────────────────────────────────────────────────────┘
                          │
 ┌─────────────────────────────────────────────────────┐
-│         Post-Quantum Layer (Optional)               │
+│         Post-Quantum Layer                          │
 │  Kyber-1024 KEM | Dilithium Signatures              │
 └─────────────────────────────────────────────────────┘
 ```
@@ -267,7 +265,7 @@ cargo run --example demo_complete
 - **Key Exchange**: X3DH + optional Kyber-1024
 - **Ratcheting**: Double Ratchet + Fractal extensions
 - **Encryption**: ChaCha20-Poly1305 AEAD
-- **Signatures**: Ed25519 + optional Dilithium
+- **Signatures**: Ed25519 + Dilithium
 - **Key Derivation**: HKDF-SHA256
 - **ZKP**: Schnorr signatures on secp256k1
 - **Steganography**: Adaptive (JSON/HTTP/EXIF)
@@ -308,7 +306,7 @@ Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## 👨‍💻 Credits
 
-**Protocol Design & Implementation**: [Sangeet Sharma](https://www.linkedin.com/in/sangeet01)
+**Protocol Design & Implementation**: [Sangeet Sharma](https://www.linkedin.com/in/sangeet-sangiit01)
 - Python implementation 
 - Rust implementation with Amazon Q 
 - Fractal Group Ratchet algorithm (original work)
@@ -336,7 +334,7 @@ If you use Matryoshka Protocol in your research, please cite:
   author = {Sharma, Sangeet},
   title = {Matryoshka Protocol: Achieving Shannon's Trident in Secure Messaging},
   year = {2025},
-  url = {https://github.com/yourusername/matp},
+  url = {https://github.com/sangeet01/matp},
   note = {Python and Rust implementation}
 }
 ```
