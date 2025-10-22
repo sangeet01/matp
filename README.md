@@ -8,7 +8,6 @@
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-quantum%20resistant-red.svg)](docs/security.md)
-[![Tests](https://img.shields.io/badge/tests-55%2F55%20passing-brightgreen.svg)](https://github.com/sangeet01/matp)
 
 
 ## 🎯 Shannon's Trident Achieved
