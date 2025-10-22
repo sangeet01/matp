@@ -1,3 +1,4 @@
+
 # 🪆 Matryoshka Protocol
 
 **An invisible secure messaging protocol achieving Shannon's Trident**
@@ -9,13 +10,14 @@
 [![Security](https://img.shields.io/badge/security-quantum%20resistant-red.svg)](docs/security.md)
 [![Tests](https://img.shields.io/badge/tests-55%2F55%20passing-brightgreen.svg)](https://github.com/sangeet01/matp)
 
+
 ## 🎯 Shannon's Trident Achieved
 
 The Matryoshka Protocol is the first implementation to simultaneously achieve all three pillars of Claude Shannon's cryptographic theory:
 
-1. **Secrecy** (Confidentiality) → Fractal + Double Ratchet + Post-Quantum ✅
-2. **Authentication** (Integrity) → ZKP proofs + Schnorr signatures ✅  
-3. **Steganography** (Invisibility) → Ghost Protocol, ε→0 detection ✅
+1. **Secrecy** (Confidentiality) → Fractal + Double Ratchet + Post-Quantum 
+2. **Authentication** (Integrity) → ZKP proofs + Schnorr signatures   
+3. **Steganography** (Invisibility) → Ghost Protocol, ε→0 detection 
 
 **Performance**: ~25ms per message (Rust) | ~50ms (Python)
 
