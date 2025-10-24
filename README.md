@@ -1,4 +1,3 @@
-
 # 🪆 Matryoshka Protocol
 
 **An invisible secure messaging protocol achieving Shannon's Trident**
