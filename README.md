@@ -51,22 +51,29 @@ The Matryoshka Protocol is the first implementation to simultaneously achieve al
 ## 📦 Installation
 
 ### Python
+
 ```bash
+
 pip install matp
 ```
+
 
 **PyPI**: [https://pypi.org/project/matp/](https://pypi.org/project/matp/)
 
 ### Rust
 ```toml
+
 [dependencies]
 mtp-core = "0.1"
 ```
 
+
 ## 🎯 Quick Start
 
 ### Python
+
 ```python
+
 from matryoshka import MatryoshkaSession
 from cryptography.hazmat.primitives.asymmetric import x25519
 
@@ -103,10 +110,13 @@ print("Received:", received)
 is_innocent = bob.verify_innocence(ghost_msg.innocence_proof)
 print("Traffic appears innocent:", is_innocent)
 # Output: True
+
 ```
 
 ### Rust
+
 ```rust
+
 use mtp_core::session::MatryoshkaSession;
 
 // Create sessions
@@ -122,6 +132,7 @@ let packet = alice.encrypt(b"Hello from Rust!", false)?;
 let plaintext = bob.decrypt(&packet)?;
 
 println!("Received: {}", String::from_utf8_lossy(&plaintext));
+
 ```
 
 ## 🔒 Security Properties
@@ -161,7 +172,9 @@ All properties are **cryptographically proven** with mathematical reductions:
 ## 🎭 Advanced Usage
 
 ### Fractal Group Ratchet (O(1) Groups)
+
 ```python
+
 from matryoshka.groups import MatryoshkaGroupManager
 
 manager = MatryoshkaGroupManager("alice")
@@ -176,10 +189,13 @@ ciphertext = manager.send_to_group("team", "Hello team!")
 
 # Any member decrypts in O(1) time
 plaintext = manager.receive_group_message(ciphertext)
+
 ```
 
 ### ZKP Session Recovery
+
 ```python
+
 # Automatic recovery with MITM protection
 try:
     received = bob.receive_message(corrupted_message)
@@ -200,10 +216,13 @@ ghost_msg = alice.send_message(
 
 # Observer sees normal web traffic
 # Statistical analysis: ε→0 detection probability
+
 ```
 
 ### Quantum Decoy Defense
+
 ```python
+
 # Generate decoys to waste quantum resources
 ghost_msg = alice.send_message(
     "Quantum-protected message",
@@ -211,27 +230,34 @@ ghost_msg = alice.send_message(
 )
 print(f"Generated {len(ghost_msg.quantum_decoys)} quantum decoys")
 # Quantum computer must break all ciphertexts to find real one
+
 ```
 
 ## 🧪 Testing
 
 ### Python
+
 ```bash
+
 cd python
 pytest tests/ -v
 
 # Run specific tests
 pytest tests/test_zkp_recovery.py -v
+
 ```
 
 ### Rust
+
 ```bash
+
 cd rust/core
 cargo test --verbose --all-features
 
 # Run examples
 cargo run --example demo_zkp
 cargo run --example demo_complete
+
 ```
 
 **Test Coverage**: 55/55 tests passing (100%)
@@ -239,6 +265,7 @@ cargo run --example demo_complete
 ## 🔬 Technical Details
 
 ### Protocol Architecture
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │              Ghost Layer (Steganography)            │
@@ -259,6 +286,7 @@ cargo run --example demo_complete
 │         Post-Quantum Layer                          │
 │  Kyber-1024 KEM | Dilithium Signatures              │
 └─────────────────────────────────────────────────────┘
+
 ```
 
 ### Cryptographic Primitives
@@ -330,6 +358,7 @@ This is experimental software under active development. While the cryptographic 
 If you use Matryoshka Protocol in your research, please cite:
 
 ```bibtex
+
 @software{matryoshka2024,
   author = {Sharma, Sangeet},
   title = {Matryoshka Protocol: Achieving Shannon's Trident in Secure Messaging},
@@ -337,6 +366,7 @@ If you use Matryoshka Protocol in your research, please cite:
   url = {https://github.com/sangeet01/matp},
   note = {Python and Rust implementation}
 }
+
 ```
 
 ---
