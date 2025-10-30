@@ -241,7 +241,7 @@ p = 0.8 (80% delivery): Pr[restored] = 1 - 0.2³ = 0.992
 p = 0.7 (70% delivery): Pr[restored] = 1 - 0.3³ = 0.973
 ```
 
-**Conclusion:** Matryoshka provides high-probability post-compromise security within 3 steps. ∎
+**Conclusion:** Matryoshka provides high-probability post-compromise security within 3 steps. 
 
 ---
 
@@ -570,7 +570,7 @@ Groth16 ZKP: 128-256 bytes (optimal)
 Matryoshka uses Schnorr: 200-500 bytes per proof
 ```
 
-**Conclusion:** Matryoshka's limitations are fundamental tradeoffs, not implementation flaws. ∎
+**Conclusion:** Matryoshka's limitations are fundamental tradeoffs, not implementation flaws. 
 
 ---
 
