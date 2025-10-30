@@ -1629,7 +1629,7 @@ Pr[detect] = 1 - Pr[undetected]
            ≈ 99.9999982%
 ```
 
-**Conclusion:** MAP detects MITM with probability > 99.9999% within 10 seconds. ∎
+**Conclusion:** MAP detects MITM with probability > 99.9999% within 10 seconds. 
 
 ---
 
@@ -1667,7 +1667,7 @@ For any PPT distinguisher D:
 where R₁, R₂ ← {0,1}^256 are uniformly random
 ```
 
-Therefore: key_i and key_j are computationally independent. □
+Therefore: key_i and key_j are computationally independent. 
 
 **Lemma 2.2 (Time Slot Unpredictability):** Future keys are unpredictable from past keys.
 
@@ -1710,7 +1710,7 @@ Adv_KEY-PRED^A(λ) ≤ Σ(i=1 to q) Pr[A predicts key_i]
                   = negl(λ)
 ```
 
-**Conclusion:** Predictive cryptography is secure under HKDF assumption. ∎
+**Conclusion:** Predictive cryptography is secure under HKDF assumption. 
 
 ---
 
@@ -1749,7 +1749,7 @@ Induction:
 - Base: S(0) = 1 ∈ [0, 1] ✓
 - Step: If S(t) ∈ [0, 1], then S(t+Δt) ∈ [0, 1] by min/max clipping ✓
 
-□
+
 
 **Lemma 3.2 (Detection Threshold):** If MITM present, S(t) < 0.5 within expected time E[T_detect].
 
@@ -1772,7 +1772,7 @@ Number of checks needed: n = (1 - 0.5) / 0.26 ≈ 1.92 ≈ 2 checks
 Expected time: E[T_detect] = n / λ_rate = 2 / 0.1 = 20 seconds
 ```
 
-□
+
 
 **Lemma 3.3 (False Positive Rate):** Legitimate connection maintains S(t) > 0.5 with high probability.
 
@@ -1800,9 +1800,9 @@ Pr[≥5 failures] ≤ Σ(k=5 to 10) (10 choose k) · (0.01)^k · (0.99)^(10-k)
                 ≈ 0.0000000091
 ```
 
-□
 
-**Conclusion:** Security score provides reliable continuous metric with negligible false positive rate. ∎
+
+**Conclusion:** Security score provides reliable continuous metric with negligible false positive rate. 
 
 ---
 
@@ -1838,7 +1838,7 @@ For query:
 Pr[all k bits are 1 | element not in set] = (1 - e^(-kn/m))^k
 ```
 
-□
+
 
 **Lemma 4.2 (Optimal k):** For fixed m and n, optimal k minimizes p_fp.
 
@@ -1873,7 +1873,7 @@ Solving for m:
 m* = -n · ln(p) / (ln(2))²
 ```
 
-□
+
 
 **Numerical Verification:**
 
@@ -1890,7 +1890,7 @@ k* = (143896/10000) · ln(2)
    ≈ 10 hash functions
 ```
 
-**Conclusion:** Bloom filter parameters are mathematically optimal. ∎
+**Conclusion:** Bloom filter parameters are mathematically optimal. 
 
 ---
 
@@ -1934,7 +1934,7 @@ Challenge-response: HMAC = O(1)
 
 **Total:** O(1) + O(1) + O(1) + O(1) + O(1) = O(1)
 
-**Conclusion:** Constant time complexity (optimal). ∎
+**Conclusion:** Constant time complexity (optimal). 
 
 ### A4.2 Theorem 6: Space Complexity
 
@@ -1965,7 +1965,7 @@ S_pool = 10 · connection_size = O(1)
 **Total per connection:** O(1)
 **Shared Bloom filter:** O(n)
 
-**Conclusion:** Linear space for certificate storage (optimal), constant per connection. ∎
+**Conclusion:** Linear space for certificate storage (optimal), constant per connection. 
 
 ---
 
@@ -2006,7 +2006,7 @@ H(T) = log₂(e/0.1) + 1
      = 5.76 bits
 ```
 
-**Conclusion:** ~5.76 bits of unpredictability in check timing. ∎
+**Conclusion:** ~5.76 bits of unpredictability in check timing. 
 
 ### A5.2 Theorem 8: Memoryless Property
 
@@ -2035,7 +2035,7 @@ I(T₁; T₂) = H(T₁) - H(T₁ | T₂)
 
 **Security implication:** Adversary cannot predict next check from observing previous checks.
 
-**Conclusion:** Perfect unpredictability (optimal for security). ∎
+**Conclusion:** Perfect unpredictability (optimal for security). 
 
 ---
 
