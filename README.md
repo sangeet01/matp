@@ -359,7 +359,7 @@ If you use Matryoshka Protocol in your research, please cite:
 
 ```bibtex
 
-@software{matryoshka2024,
+@software{matryoshka2025,
   author = {Sharma, Sangeet},
   title = {Matryoshka Protocol: Achieving Shannon's Trident in Secure Messaging},
   year = {2025},
