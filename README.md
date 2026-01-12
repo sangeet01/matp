@@ -1,3 +1,4 @@
+
 # 🪆 Matryoshka Protocol
 
 **An invisible secure messaging protocol achieving Shannon's Trident**
@@ -18,6 +19,7 @@ The Matryoshka Protocol is the first implementation to simultaneously achieve al
 3. **Steganography** (Invisibility) → Ghost Protocol, ε→0 detection 
 
 **Performance**: ~25ms per message (Rust) | ~50ms (Python)
+
 
 ## 🚀 Characteristic Features
 
@@ -53,7 +55,6 @@ The Matryoshka Protocol is the first implementation to simultaneously achieve al
 ### Python
 
 ```bash
-
 pip install matp
 ```
 
@@ -62,7 +63,6 @@ pip install matp
 
 ### Rust
 ```toml
-
 [dependencies]
 mtp-core = "0.1"
 ```
@@ -73,7 +73,6 @@ mtp-core = "0.1"
 ### Python
 
 ```python
-
 from matryoshka import MatryoshkaSession
 from cryptography.hazmat.primitives.asymmetric import x25519
 
@@ -110,13 +109,11 @@ print("Received:", received)
 is_innocent = bob.verify_innocence(ghost_msg.innocence_proof)
 print("Traffic appears innocent:", is_innocent)
 # Output: True
-
 ```
 
 ### Rust
 
 ```rust
-
 use mtp_core::session::MatryoshkaSession;
 
 // Create sessions
@@ -174,7 +171,6 @@ All properties are **cryptographically proven** with mathematical reductions:
 ### Fractal Group Ratchet (O(1) Groups)
 
 ```python
-
 from matryoshka.groups import MatryoshkaGroupManager
 
 manager = MatryoshkaGroupManager("alice")
@@ -189,13 +185,11 @@ ciphertext = manager.send_to_group("team", "Hello team!")
 
 # Any member decrypts in O(1) time
 plaintext = manager.receive_group_message(ciphertext)
-
 ```
 
 ### ZKP Session Recovery
 
 ```python
-
 # Automatic recovery with MITM protection
 try:
     received = bob.receive_message(corrupted_message)
@@ -216,13 +210,11 @@ ghost_msg = alice.send_message(
 
 # Observer sees normal web traffic
 # Statistical analysis: ε→0 detection probability
-
 ```
 
 ### Quantum Decoy Defense
 
 ```python
-
 # Generate decoys to waste quantum resources
 ghost_msg = alice.send_message(
     "Quantum-protected message",
@@ -238,7 +230,6 @@ print(f"Generated {len(ghost_msg.quantum_decoys)} quantum decoys")
 ### Python
 
 ```bash
-
 cd python
 pytest tests/ -v
 
